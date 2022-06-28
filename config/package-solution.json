@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "pagination-webpart-client-side-solution",
+    "id": "8592367e-c2df-4cfe-9034-3c8ca0abc7a1",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.15.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "pagination-webpart description"
+      },
+      "longDescription": {
+        "default": "pagination-webpart description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "pagination-webpart Feature",
+        "description": "The feature that activates elements of the pagination-webpart solution.",
+        "id": "bf87a5d1-9dd9-4601-8c2c-b7adfe75bf1e",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/pagination-webpart.sppkg"
+  }
+}

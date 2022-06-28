@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": "1.15.0",
+    "libraryName": "pagination-webpart",
+    "libraryId": "8592367e-c2df-4cfe-9034-3c8ca0abc7a1",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "pagination-webpart",
+    "solutionShortDescription": "pagination-webpart description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
