@@ -3,4 +3,5 @@ export interface ISPItem {
     Content_EN: string;
     RollupImage: string;
     ApplicationArea: string;
+    TechnologyArea: string;
 }

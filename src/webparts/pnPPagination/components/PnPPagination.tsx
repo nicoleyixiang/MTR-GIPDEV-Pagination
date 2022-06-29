@@ -17,7 +17,7 @@ import pnp from 'sp-pnp-js';
 import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
 
-import {Dropdown, PrimaryButton, IDropdownOption} from '@fluentui/react';
+import { Dropdown, PrimaryButton, IDropdownOption } from '@fluentui/react';
 
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -68,45 +68,87 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       allItems: [],
       paginatedItems: [],
       AAtags: [],
-      AASelected: "",
+      AASelected: [],
+      TAtags: [],
+      TASelected: [],
     };
   }
 
   public componentDidMount(): void {
     this.getSPListItems();
-    this.getTagListItems();
+    this.getAATagListItems();
+    this.getTATagListItems();
   }
 
-  public logChange(val) {
+  public AAlogChange(val) {
     // console.log("Selected: " + val.value);
-    this.setState({
-      allItems: this.state.allItems.filter(function (item) 
-      {
-        console.log(item.ApplicationArea);
-        return item.ApplicationArea === (val ? val.value : null);
-      })
-    });
-    console.log(this.state.allItems);
-    this._getPage(1);
-    this._getPage(1);
-    
+    if (val) {
+      this.setState({AASelected : this.state.allItems});
+      this.setState({
+        allItems: this.state.allItems.filter(function (item) {
+          return item.ApplicationArea === (val ? val.value : null);
+        })
+      });
+      console.log(this.state.allItems);
+      this._getPage(1);
+    }
+    else {
+      console.log("hello");
+      this.setState({ allItems: this.state.listData });
+      this._getPage(1);
+    }
+  }
+
+  public TAlogChange(val) {
+    if (val) {
+      this.setState({TASelected : this.state.allItems});
+      this.setState({
+        allItems: this.state.allItems.filter(function (item) {
+          return item.ApplicationArea === (val ? val.value : null);
+        })
+      });
+      console.log(this.state.allItems);
+      this._getPage(1);
+    }
+    else if (this.state.AASelected.length === 0) {
+      console.log("clearall");
+      this.setState({ allItems: this.state.listData });
+      console.log(this.state.allItems);
+      this._getPage(1);
+    }
+    else {
+      this.setState({allItems : this.state.AASelected, TASelected : []})
+      console.log(this.state.allItems);
+    }
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
     return (
       <main>
         <Select
-          className="basic-single"
+          className="AA-single"
           classNamePrefix="select"
           // defaultValue={colourOptions[0]
           isClearable={true}
           // isRtl={isRtl}
           placeholder="Select AA Tag..."
-          onChange={(val) => this.logChange(val)}
+          onChange={(val) => this.AAlogChange(val)}
           name="color"
           options={this.state.AAtags}
-          // isClearable={true}
-          />
+        // isClearable={true}
+        />
+        <Select
+          className="TA-single"
+          classNamePrefix="select"
+          // defaultValue={colourOptions[0]
+          isClearable={true}
+          // isRtl={isRtl}
+          placeholder="Select TA Tag..."
+          onChange={(val) => this.TAlogChange(val)}
+          name="color"
+          options={this.state.TAtags}
+        // isClearable={true}
+        />
         <Grid columns="repeat(auto-fill, minmax(300px, 1fr))"
           columnGap="2rem" rowGap="2rem">
           {
@@ -139,7 +181,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   private _getPage(page: number) {
     // round a number up to the next largest integer.
     const roundupPage = Math.ceil(page);
-    console.log(roundupPage);
 
     this.setState({
       paginatedItems: this.state.allItems.slice((roundupPage - 1) * pageSize, ((roundupPage - 1) * pageSize) + pageSize)
@@ -150,15 +191,23 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     pnp.sp.web.lists.getByTitle('Publication').items.getAll().then
       ((Response) => {
         let customerCollection = Response.map(item => new ClassItem(item));
-        this.setState({listData: customerCollection, allItems: customerCollection, paginatedItems: customerCollection.slice(0, pageSize) });
+        this.setState({ listData: customerCollection, allItems: customerCollection, paginatedItems: customerCollection.slice(0, pageSize) });
       });
   }
 
-  public getTagListItems() {
+  public getAATagListItems() {
     pnp.sp.web.lists.getByTitle('AATags').items.getAll().then
       ((Response) => {
         let tags = Response.map(item => new ClassTag(item));
         this.setState({ AAtags: tags });
+      });
+  }
+
+  public getTATagListItems() {
+    pnp.sp.web.lists.getByTitle('TATags').items.getAll().then
+      ((Response) => {
+        let tags = Response.map(item => new ClassTag(item));
+        this.setState({ TAtags: tags });
       });
   }
 }

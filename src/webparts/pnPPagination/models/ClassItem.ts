@@ -8,6 +8,7 @@ export class ClassItem{
     public imageRelativeURL:number; 
     public RollupImage:string;
     public ApplicationArea:string;
+    public TechnologyArea:string;
 
     // item parameter is the actual object (entry) being retrieved from the list 
     // item.(fieldname) is how we get each of the fields 
@@ -16,6 +17,6 @@ export class ClassItem{
         this.Content_EN = item.Content_EN;
         this.RollupImage = item.RollupImage;
         this.ApplicationArea = item.ApplicationArea;
-        // this.RollupImage = new ClassImage(item.RollupImage);
+        this.TechnologyArea = item.TechnologyArea;
     }
 }
