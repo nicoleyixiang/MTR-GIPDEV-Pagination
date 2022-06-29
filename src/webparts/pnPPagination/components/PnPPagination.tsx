@@ -13,7 +13,8 @@ import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
 
 
-import Select from 'react-select-plus';
+// import Select from 'react-select-plus';
+import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
 
 import {Dropdown, PrimaryButton, IDropdownOption} from '@fluentui/react';
@@ -63,9 +64,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     super(props);
 
     this.state = {
+      listData: [],
       allItems: [],
       paginatedItems: [],
       AAtags: [],
+      AASelected: "",
     };
   }
 
@@ -75,28 +78,35 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   public logChange(val) {
-    console.log("Selected: " + val.value);
+    // console.log("Selected: " + val.value);
     this.setState({
       allItems: this.state.allItems.filter(function (item) 
       {
         console.log(item.ApplicationArea);
-        return item.ApplicationArea === val.value;
+        return item.ApplicationArea === (val ? val.value : null);
       })
     });
     console.log(this.state.allItems);
     this._getPage(1);
+    this._getPage(1);
+    
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
     return (
       <main>
         <Select
-          name="form-field-name"
-          value="one"
-          options={this.state.AAtags}
-          onChange={(val) => this.logChange(val)}
+          className="basic-single"
+          classNamePrefix="select"
+          // defaultValue={colourOptions[0]
+          isClearable={true}
+          // isRtl={isRtl}
           placeholder="Select AA Tag..."
-        />
+          onChange={(val) => this.logChange(val)}
+          name="color"
+          options={this.state.AAtags}
+          // isClearable={true}
+          />
         <Grid columns="repeat(auto-fill, minmax(300px, 1fr))"
           columnGap="2rem" rowGap="2rem">
           {
@@ -140,7 +150,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     pnp.sp.web.lists.getByTitle('Publication').items.getAll().then
       ((Response) => {
         let customerCollection = Response.map(item => new ClassItem(item));
-        this.setState({ allItems: customerCollection, paginatedItems: customerCollection.slice(0, pageSize) });
+        this.setState({listData: customerCollection, allItems: customerCollection, paginatedItems: customerCollection.slice(0, pageSize) });
       });
   }
 

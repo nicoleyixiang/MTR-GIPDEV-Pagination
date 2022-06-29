@@ -5,4 +5,6 @@ export interface IPnPPaginationState {
     allItems: ISPItem[];
     paginatedItems: ISPItem[]; 
     AAtags: ISPTag[];
+    listData: ISPItem[];
+    AASelected: string;
 } 
