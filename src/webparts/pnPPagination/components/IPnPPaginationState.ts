@@ -9,4 +9,7 @@ export interface IPnPPaginationState {
     AASelected: ISPItem[];
     TAtags: ISPTag[];
     TASelected: ISPItem[];
+
+    AASelectedTag : string;
+    TASelectedTag : string;
 } 

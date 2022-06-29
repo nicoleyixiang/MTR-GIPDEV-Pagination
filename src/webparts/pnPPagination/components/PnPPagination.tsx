@@ -17,7 +17,7 @@ import pnp from 'sp-pnp-js';
 import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
 
-import { Dropdown, PrimaryButton, IDropdownOption } from '@fluentui/react';
+import { Dropdown, PrimaryButton, IDropdownOption, ThemeSettingName } from '@fluentui/react';
 
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -71,6 +71,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       AASelected: [],
       TAtags: [],
       TASelected: [],
+
+      AASelectedTag: "",
+      TASelectedTag: "",
     };
   }
 
@@ -80,75 +83,100 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this.getTATagListItems();
   }
 
-  public AAlogChange(val) {
-    // console.log("Selected: " + val.value);
-    if (val) {
-      this.setState({AASelected : this.state.allItems});
+  public resetLists(): void {
+    if (this.state.AASelectedTag !== "" && this.state.TASelectedTag !== "") {
+      console.log("selected something for both");
+      const aatag = this.state.AASelectedTag;
+      const tatag = this.state.TASelectedTag;
       this.setState({
-        allItems: this.state.allItems.filter(function (item) {
-          return item.ApplicationArea === (val ? val.value : null);
+        paginatedItems : this.state.listData.filter(function (item) {
+          return (item.TechnologyArea === tatag);
+        }).filter(function (item) {
+          return (item.ApplicationArea === aatag);
+        }).slice(0, pageSize),
+        allItems: this.state.listData.filter(function (item) {
+          return (item.TechnologyArea === tatag);
+        }).filter(function (item) {
+          return (item.ApplicationArea === aatag);
         })
       });
-      console.log(this.state.allItems);
-      this._getPage(1);
+    }
+    else if (this.state.AASelectedTag === "" && this.state.TASelectedTag !== "") {
+      console.log("selected something for TA");
+      const currtag : string = this.state.TASelectedTag;
+      this.setState({
+        paginatedItems : this.state.listData.filter(function (item) {
+          return (item.TechnologyArea === currtag);
+        }).slice(0, pageSize),
+        allItems: this.state.listData.filter(function (item) {
+          return (item.TechnologyArea === currtag);
+        })
+      })
+    }
+    else if (this.state.AASelectedTag !== "" && this.state.TASelectedTag === "") {
+      console.log("selected something for AA");
+      const currtag : string = this.state.AASelectedTag;
+      this.setState({
+        paginatedItems : this.state.listData.filter(function (item) {
+          return (item.ApplicationArea === currtag);
+        }).slice(0, pageSize),
+        allItems: this.state.listData.filter(function (item) {
+          return (item.ApplicationArea === currtag);
+        })
+      })
     }
     else {
-      console.log("hello");
-      this.setState({ allItems: this.state.listData });
-      this._getPage(1);
+      console.log("reset to all");
+      this.setState({
+        paginatedItems: this.state.listData.slice(0, pageSize),
+        allItems: this.state.listData
+      });
     }
+    console.log("AA" + this.state.AASelectedTag);
+    console.log("TA" + this.state.TASelectedTag);
+    // this.setState({ paginatedItems: this.state.listData.slice(0, pageSize) });
+  }
+
+  public AAlogChange(val) {
+    this.setState({ AASelectedTag: val ? val.value : "" });
+    this.resetLists();
   }
 
   public TAlogChange(val) {
-    if (val) {
-      this.setState({TASelected : this.state.allItems});
-      this.setState({
-        allItems: this.state.allItems.filter(function (item) {
-          return item.ApplicationArea === (val ? val.value : null);
-        })
-      });
-      console.log(this.state.allItems);
-      this._getPage(1);
-    }
-    else if (this.state.AASelected.length === 0) {
-      console.log("clearall");
-      this.setState({ allItems: this.state.listData });
-      console.log(this.state.allItems);
-      this._getPage(1);
-    }
-    else {
-      this.setState({allItems : this.state.AASelected, TASelected : []})
-      console.log(this.state.allItems);
-    }
+    this.setState({ TASelectedTag: val ? val.value : "" });
+    this.resetLists();
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
     return (
       <main>
-        <Select
-          className="AA-single"
-          classNamePrefix="select"
-          // defaultValue={colourOptions[0]
-          isClearable={true}
-          // isRtl={isRtl}
-          placeholder="Select AA Tag..."
-          onChange={(val) => this.AAlogChange(val)}
-          name="color"
-          options={this.state.AAtags}
-        // isClearable={true}
-        />
-        <Select
-          className="TA-single"
-          classNamePrefix="select"
-          // defaultValue={colourOptions[0]
-          isClearable={true}
-          // isRtl={isRtl}
-          placeholder="Select TA Tag..."
-          onChange={(val) => this.TAlogChange(val)}
-          name="color"
-          options={this.state.TAtags}
-        // isClearable={true}
-        />
+        <div className="filtering-box">
+          <Select
+            className="AA-single"
+            classNamePrefix="select"
+            // defaultValue={colourOptions[0]
+            isClearable={true}
+            // isRtl={isRtl}
+            placeholder="Select AA Tag..."
+            onChange={(val) => this.AAlogChange(val)}
+            name="color"
+            options={this.state.AAtags}
+          // isClearable={true}
+          />
+          <Select
+            className="TA-single"
+            classNamePrefix="select"
+            // defaultValue={colourOptions[0]
+            isClearable={true}
+            // isRtl={isRtl}
+            placeholder="Select TA Tag..."
+            onChange={(val) => this.TAlogChange(val)}
+            name="color"
+            options={this.state.TAtags}
+          // isClearable={true}
+          />
+        </div>
+
         <Grid columns="repeat(auto-fill, minmax(300px, 1fr))"
           columnGap="2rem" rowGap="2rem">
           {
@@ -160,6 +188,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
                     {item.Title}
                   </p>
                   <p>{item.ApplicationArea}</p>
+                  <p>{item.TechnologyArea}</p>
                   {/* <div className="card__tag">hello</div> */}
                 </div>
               </div>
