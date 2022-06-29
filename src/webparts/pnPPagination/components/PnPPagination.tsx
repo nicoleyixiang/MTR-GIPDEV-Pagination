@@ -56,10 +56,6 @@ const pageSize: number = 6;
 
 // var Select = require('react-select-plus');
 
-function logChange(val) {
-  console.log("Selected: " + val);
-}
-
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
   onSelectedItem: (item: any) => void;
 
@@ -83,9 +79,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this.setState({
       allItems: this.state.allItems.filter(function (item) 
       {
-        return item.ApplicationArea === val;
+        console.log(item.ApplicationArea);
+        return item.ApplicationArea === val.value;
       })
     });
+    console.log(this.state.allItems);
     this._getPage(1);
   }
 
@@ -96,7 +94,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
           name="form-field-name"
           value="one"
           options={this.state.AAtags}
-          onChange={logChange}
+          onChange={(val) => this.logChange(val)}
           placeholder="Select AA Tag..."
         />
         <Grid columns="repeat(auto-fill, minmax(300px, 1fr))"
@@ -138,10 +136,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     });
   }
 
-  private refresh(aa_tag : string) {
-    // this.setState
-  }
-
   public getSPListItems() {
     pnp.sp.web.lists.getByTitle('Publication').items.getAll().then
       ((Response) => {
@@ -155,8 +149,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       ((Response) => {
         let tags = Response.map(item => new ClassTag(item));
         this.setState({ AAtags: tags });
-        console.log(this.state.allItems);
-        console.log(this.state.AAtags);
       });
   }
 }
