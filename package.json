@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@coreui/react": "^4.2.3",
+    "@fluentui/react": "^8.77.2",
     "@microsoft/sp-core-library": "1.15.0",
     "@microsoft/sp-lodash-subset": "1.15.0",
     "@microsoft/sp-office-ui-fabric-core": "1.15.0",
@@ -21,6 +22,7 @@
     "office-ui-fabric-react": "7.185.7",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "react-select-plus": "^1.0.0-rc.3.patch12",
     "sp-pnp-js": "^3.0.10",
     "tslib": "2.3.1"
   },
