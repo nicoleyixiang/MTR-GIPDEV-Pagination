@@ -58,33 +58,39 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       });
     }
     else {
-      console.log("Some tag applied");
-      console.log(this.state.AASelectedTags);
-      console.log(this.state.TASelectedTags);
       let items = [];
       const AAtagsList = this.state.AASelectedTags;
-      console.log(AAtagsList);
+      const TAtagsList = this.state.TASelectedTags;
+
+      if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
+        for (let i = 0; i < AAtagsList.length; i++) {
+          for (let j = 0; j < TAtagsList.length; j++) {
+            console.log("hello");
+            items = items.concat(this.state.listData.filter(function(item) {
+              return ((item.LOOKUPId === AAtagsList[i].ID)
+                    && (item.LOOKUP2Id === TAtagsList[j].ID));
+          }))
+        }
+      }
+    } else {
       for (let i = 0; i < AAtagsList.length; i++) {
         items = items.concat(this.state.listData.filter(function(item) {
-          console.log(item.LOOKUPId);
-          console.log(AAtagsList[i]);
           return (item.LOOKUPId === AAtagsList[i].ID);
         }))
       }
-      
-      const TAtagsList = this.state.TASelectedTags;
       for (let j = 0; j < TAtagsList.length; j++) {
         items = items.concat(this.state.listData.filter(function(item) {
           return (item.LOOKUP2Id === TAtagsList[j].ID);
         }))
       }
 
-      console.log("items" + items);
-      this.setState({
-        paginatedItems : items.slice(0, pageSize),
-        allItems: items
-        })
     }
+
+    this.setState({
+      paginatedItems : items.slice(0, pageSize),
+      allItems: items
+      })
+  }
   }
   
   public noFilterListItems() {
