@@ -138,13 +138,13 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   public AAlogChange(val) {
-    this.setState({ AASelectedTag: val ? val.value : "" });
-    this.resetLists();
+    this.setState({ AASelectedTag: val ? val.value : "" }, ()=>
+    this.resetLists());
   }
 
   public TAlogChange(val) {
-    this.setState({ TASelectedTag: val ? val.value : "" });
-    this.resetLists();
+    this.setState({ TASelectedTag: val ? val.value : "" }, ()=>
+    this.resetLists());
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
@@ -161,7 +161,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             onChange={(val) => this.AAlogChange(val)}
             name="color"
             options={this.state.AAtags}
-          // isClearable={true}
           />
           <Select
             className="TA-single"
@@ -173,7 +172,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             onChange={(val) => this.TAlogChange(val)}
             name="color"
             options={this.state.TAtags}
-          // isClearable={true}
           />
         </div>
 
