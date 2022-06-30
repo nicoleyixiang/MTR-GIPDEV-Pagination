@@ -12,8 +12,6 @@ import { GridLayout } from "@pnp/spfx-controls-react/lib/GridLayout";
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
 
-
-// import Select from 'react-select-plus';
 import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
 
@@ -22,40 +20,9 @@ import { Dropdown, PrimaryButton, IDropdownOption, ThemeSettingName } from '@flu
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import { ComboBoxListItemPicker } from '@pnp/spfx-controls-react/lib/ListItemPicker';
-import {
-  DocumentCard,
-  DocumentCardActivity,
-  DocumentCardPreview,
-  DocumentCardDetails,
-  DocumentCardTitle,
-  IDocumentCardPreviewProps,
-  DocumentCardLocation,
-  DocumentCardType
-} from 'office-ui-fabric-react/lib/DocumentCard';
-import { ImageFit } from 'office-ui-fabric-react/lib/Image';
-import { ISize } from 'office-ui-fabric-react/lib/Utilities';
-import { CCard, CCardImage, CCardBody, CCardTitle, CCardText, CButton, CRow, CCol } from '@coreui/react';
-
 import { Grid } from '@react-ui-org/react-ui';
 
-
-// import * as React from 'react';
-import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
-import {
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-
-// import * as strings from 'FluentUiDropdownWebPartStrings';
-// import FluentUiDropdown from './components/FluentUiDropdown';
-// import { IFluentUiDropdownProps } from './components/IFluentUiDropdownProps';
-
 const pageSize: number = 6;
-
-// var Select = require('react-select-plus');
 
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
   onSelectedItem: (item: any) => void;
@@ -71,7 +38,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       AASelected: [],
       TAtags: [],
       TASelected: [],
-
       AASelectedTag: "",
       TASelectedTag: "",
     };
@@ -149,7 +115,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   public render(): React.ReactElement<IPnPPaginationProps> {
     return (
-      <main>
+      <div className="main__container">
         <div className="filtering-box">
           <Select
             className="AA-single"
@@ -157,10 +123,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             // defaultValue={colourOptions[0]
             isClearable={true}
             // isRtl={isRtl}
-            placeholder="Select AA Tag..."
+            placeholder="Application Area"
             onChange={(val) => this.AAlogChange(val)}
             name="color"
             options={this.state.AAtags}
+            // styles={customStyles}
           />
           <Select
             className="TA-single"
@@ -168,26 +135,27 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             // defaultValue={colourOptions[0]
             isClearable={true}
             // isRtl={isRtl}
-            placeholder="Select TA Tag..."
+            placeholder="Technology Area"
             onChange={(val) => this.TAlogChange(val)}
             name="color"
             options={this.state.TAtags}
           />
         </div>
-
-        <Grid columns="repeat(auto-fill, minmax(300px, 1fr))"
-          columnGap="2rem" rowGap="2rem">
+        <Grid columns="repeat(auto-fit, minmax(300px, max-content))"
+          columnGap="2rem" rowGap="2rem" justifyContent="center"
+          alignItems="center" justifyItems="center">
           {
             this.state.paginatedItems.map((item) =>
               <div className="card">
                 <img className="card__image" src={JSON.parse(item.RollupImage).serverRelativeUrl}></img>
                 <div className="card__content">
-                  <p>
+                  <div className="card__title">
                     {item.Title}
-                  </p>
-                  <p>{item.ApplicationArea}</p>
-                  <p>{item.TechnologyArea}</p>
-                  {/* <div className="card__tag">hello</div> */}
+                  </div>
+                  <div className="tag__container">
+                    <div className="AAcard__tag">{item.ApplicationArea}</div>
+                    <div className="TAcard__tag">{item.TechnologyArea}</div>
+                  </div>
                 </div>
               </div>
             )
@@ -201,7 +169,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
           hideLastPageJump // Optional
           limiter={3}
         />
-      </main>
+      </div>
     );
   }
 

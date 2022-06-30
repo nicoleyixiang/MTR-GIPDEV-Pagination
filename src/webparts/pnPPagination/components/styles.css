@@ -1,3 +1,10 @@
+.main__container {
+    display: flex;
+    flex-direction: column;
+    /* vertical-align: middle; */
+    row-gap: 15px;
+    /* align-items: center; */}
+
 .cards {
     margin: 0 auto;
     max-width: 1000px;
@@ -11,6 +18,11 @@
 
 .cards * {
     box-sizing: border-box;
+}
+
+.card {
+    width: 300px;
+    height: 250px;
 }
 
 .card__image {
@@ -28,29 +40,36 @@
     font-style: bold;
     font-size: 1.2em;
     padding: 15px;
-    background: #fafafa;
-    max-height: 80px;
+    background: rgb(247, 247, 247);
+    height: 100px;
     /* border-right: 2px solid #333333;
     border-left: 2px solid #333333; */
 }
 
-.card__content p {
-    max-height: 80px; 
+.card__title {
+    max-height: 100px;
+    color: black; 
     font-style: bold;
     white-space: nowrap;
     overflow: hidden !important;
     text-overflow: ellipsis;
 }
 
-.card__tag {
-    /* margin-left: auto; */
-    padding: 5px 5px;
-    white-space: nowrap;
-    /* width: calc(100% + 4px); */
-    background-color: rgb(182, 104, 104);
-    border-radius: 20px;
-    font-size: 0.7em;
+.AAcard__tag {
+    background-color: rgb(53, 51, 214);
+    border-radius: 5px;
+    font-size: 0.6em;
     color: white;
+    padding: 2px;
+    margin-right: 5px;
+}
+
+.TAcard__tag {
+    font-size: 0.6em;
+    color: white;
+    border-radius: 5px;
+    background-color: rgb(136, 50, 0);
+    padding: 2px;
 }
 
 .card__content > p:first-of-type {
@@ -86,4 +105,41 @@
 
 .card__link:hover {
     text-decoration: underline;
+}
+
+.filtering-box {
+    width: 90%;
+    background: rgb(236, 236, 236);
+    padding: 5px;
+    border-radius: 5px;
+    display: flex;
+    /* float: right; */
+    flex-direction: row;
+    align-self: center;
+}
+
+.tag__container {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    padding-top: 10px;
+    margin-top: 10px;
+    align-items: flex-end;
+}
+
+.AA-single {
+    width: 30%;
+    margin-right: 5px;
+    padding-right: 2px;
+    float: right;
+}
+
+.TA-single {
+    width: 30%;
+    margin-right: 0;
+}
+
+@media (max-width: 900px) {
+    
+    
 }
