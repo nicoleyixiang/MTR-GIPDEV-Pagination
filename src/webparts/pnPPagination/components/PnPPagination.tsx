@@ -38,8 +38,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       AASelected: [],
       TAtags: [],
       TASelected: [],
-      AASelectedTag: "",
-      TASelectedTag: "",
+      AASelectedTags: [],
+      TASelectedTags: [],
     };
   }
 
@@ -50,67 +50,53 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   public resetLists(): void {
-    if (this.state.AASelectedTag !== "" && this.state.TASelectedTag !== "") {
-      console.log("selected something for both");
-      const aatag = this.state.AASelectedTag;
-      const tatag = this.state.TASelectedTag;
-      this.setState({
-        paginatedItems : this.state.listData.filter(function (item) {
-          return (item.TechnologyArea === tatag);
-        }).filter(function (item) {
-          return (item.ApplicationArea === aatag);
-        }).slice(0, pageSize),
-        allItems: this.state.listData.filter(function (item) {
-          return (item.TechnologyArea === tatag);
-        }).filter(function (item) {
-          return (item.ApplicationArea === aatag);
-        })
-      });
-    }
-    else if (this.state.AASelectedTag === "" && this.state.TASelectedTag !== "") {
-      console.log("selected something for TA");
-      const currtag : string = this.state.TASelectedTag;
-      this.setState({
-        paginatedItems : this.state.listData.filter(function (item) {
-          return (item.TechnologyArea === currtag);
-        }).slice(0, pageSize),
-        allItems: this.state.listData.filter(function (item) {
-          return (item.TechnologyArea === currtag);
-        })
-      })
-    }
-    else if (this.state.AASelectedTag !== "" && this.state.TASelectedTag === "") {
-      console.log("selected something for AA");
-      const currtag : string = this.state.AASelectedTag;
-      this.setState({
-        paginatedItems : this.state.listData.filter(function (item) {
-          return (item.ApplicationArea === currtag);
-        }).slice(0, pageSize),
-        allItems: this.state.listData.filter(function (item) {
-          return (item.ApplicationArea === currtag);
-        })
-      })
-    }
-    else {
+    if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
       console.log("reset to all");
       this.setState({
         paginatedItems: this.state.listData.slice(0, pageSize),
         allItems: this.state.listData
       });
     }
-    console.log("AA" + this.state.AASelectedTag);
-    console.log("TA" + this.state.TASelectedTag);
-    // this.setState({ paginatedItems: this.state.listData.slice(0, pageSize) });
+    else {
+      console.log("Some tag applied");
+      console.log(this.state.AASelectedTags);
+      console.log(this.state.TASelectedTags);
+      let items = [];
+      const AAtagsList = this.state.AASelectedTags;
+      console.log(AAtagsList);
+      for (let i = 0; i < AAtagsList.length; i++) {
+        items = items.concat(this.state.listData.filter(function(item) {
+          console.log(item.LOOKUPId);
+          console.log(AAtagsList[i]);
+          return (item.LOOKUPId === AAtagsList[i].ID);
+        }))
+      }
+      
+      const TAtagsList = this.state.TASelectedTags;
+      for (let j = 0; j < TAtagsList.length; j++) {
+        items = items.concat(this.state.listData.filter(function(item) {
+          return (item.LOOKUP2Id === TAtagsList[j].ID);
+        }))
+      }
+
+      console.log("items" + items);
+      this.setState({
+        paginatedItems : items.slice(0, pageSize),
+        allItems: items
+        })
+    }
+  }
+  
+  public noFilterListItems() {
+    throw new Error('Method not implemented.');
   }
 
   public AAlogChange(val) {
-    this.setState({ AASelectedTag: val ? val.value : "" }, ()=>
-    this.resetLists());
+    this.setState({AASelectedTags : val? val : []}, () => this.resetLists());
   }
 
   public TAlogChange(val) {
-    this.setState({ TASelectedTag: val ? val.value : "" }, ()=>
-    this.resetLists());
+    this.setState({TASelectedTags : val? val : []}, () => this.resetLists());
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
@@ -121,6 +107,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             className="AA-single"
             classNamePrefix="select"
             // defaultValue={colourOptions[0]
+            isMulti={true}
             isClearable={true}
             // isRtl={isRtl}
             placeholder="Application Area"
@@ -134,6 +121,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             classNamePrefix="select"
             // defaultValue={colourOptions[0]
             isClearable={true}
+            isMulti={true}
             // isRtl={isRtl}
             placeholder="Technology Area"
             onChange={(val) => this.TAlogChange(val)}
@@ -153,8 +141,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
                     {item.Title}
                   </div>
                   <div className="tag__container">
-                    <div className="AAcard__tag">{item.ApplicationArea}</div>
-                    <div className="TAcard__tag">{item.TechnologyArea}</div>
+                    <div className="AAcard__tag">{this.getAATag(item.LOOKUPId)}</div>
+                    <div className="TAcard__tag">{this.getTATag(item.LOOKUP2Id)}</div>
                   </div>
                 </div>
               </div>
@@ -173,6 +161,28 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     );
   }
 
+  private getAATag(idNum) {
+    console.log(idNum);
+    for (let i = 0; i < this.state.AAtags.length ; i++) {
+      console.log(this.state.AAtags[i].ID);
+      if (this.state.AAtags[i].ID == idNum) {
+        return this.state.AAtags[i].value;
+      }
+    }
+    return null;
+  }
+
+  private getTATag(idNum) {
+    console.log(idNum);
+    for (let i = 0; i < this.state.TAtags.length ; i++) {
+      console.log(this.state.TAtags[i].ID);
+      if (this.state.TAtags[i].ID == idNum) {
+        return this.state.TAtags[i].value;
+      }
+    }
+    return null;
+  }
+
   private _getPage(page: number) {
     // round a number up to the next largest integer.
     const roundupPage = Math.ceil(page);
@@ -186,6 +196,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     pnp.sp.web.lists.getByTitle('Publication').items.getAll().then
       ((Response) => {
         let customerCollection = Response.map(item => new ClassItem(item));
+        console.log(Response);
         this.setState({ listData: customerCollection, allItems: customerCollection, paginatedItems: customerCollection.slice(0, pageSize) });
       });
   }
@@ -194,6 +205,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     pnp.sp.web.lists.getByTitle('AATags').items.getAll().then
       ((Response) => {
         let tags = Response.map(item => new ClassTag(item));
+        console.log(Response);
         this.setState({ AAtags: tags });
       });
   }
