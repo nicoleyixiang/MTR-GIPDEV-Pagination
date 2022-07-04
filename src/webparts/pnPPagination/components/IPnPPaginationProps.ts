@@ -4,4 +4,5 @@ export interface IPnPPaginationProps {
   environmentMessage: string;
   hasTeamsContext: boolean;
   userDisplayName: string;
+  siteUrl : string;
 }

@@ -12,6 +12,14 @@ import * as strings from 'PnPPaginationWebPartStrings';
 import PnPPagination from './components/PnPPagination';
 import { IPnPPaginationProps } from './components/IPnPPaginationProps';
 
+import pnp from "sp-pnp-js";
+import { sp } from "@pnp/sp";
+
+// require('sp-init');
+// require('microsoft-ajax');
+// require('sp-runtime');
+// require('sharepoint');
+
 export interface IPnPPaginationWebPartProps {
   description: string;
 }
@@ -29,7 +37,8 @@ export default class PnPPaginationWebPart extends BaseClientSideWebPart<IPnPPagi
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
+        userDisplayName: this.context.pageContext.user.displayName,
+        siteUrl : this.context.pageContext.web.absoluteUrl
       }
     );
 
@@ -39,7 +48,14 @@ export default class PnPPaginationWebPart extends BaseClientSideWebPart<IPnPPagi
   protected onInit(): Promise<void> {
     this._environmentMessage = this._getEnvironmentMessage();
 
-    return super.onInit();
+    // return super.onInit();
+    return super.onInit().then(_ => {
+
+      pnp.setup({
+        spfxContext: this.context
+      });
+  
+    });
   }
 
   private _getEnvironmentMessage(): string {
