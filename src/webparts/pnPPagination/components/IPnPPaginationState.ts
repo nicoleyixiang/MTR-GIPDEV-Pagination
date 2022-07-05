@@ -12,4 +12,7 @@ export interface IPnPPaginationState {
 
     AASelectedTags : ISPTag[];
     TASelectedTags : ISPTag[];
+
+    pageNumber : number;
+    totalPages : number;
 } 

@@ -1,37 +1,33 @@
 import * as React from 'react';
-import styles from './PnPPagination.module.scss';
 import { IPnPPaginationProps } from './IPnPPaginationProps';
 import { IPnPPaginationState } from './IPnPPaginationState';
-import { escape } from '@microsoft/sp-lodash-subset';
-import { ISPItem } from '../models/ISPItem';
-import { ClassItem } from '../models/ClassItem';
 
+import { ClassItem } from '../models/ClassItem';
+import { ClassTag } from '../models/ClassTag';
 
 import { ICamlQuery } from '@pnp/sp/lists';
 import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 
-// const sp = spfi(...);
 
-import { ClassTag } from '../models/ClassTag';
-
-import { GridLayout } from "@pnp/spfx-controls-react/lib/GridLayout";
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
 
 import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
 
-import { Dropdown, PrimaryButton, IDropdownOption, ThemeSettingName } from '@fluentui/react';
-
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { Grid } from '@react-ui-org/react-ui';
+import { result } from 'lodash';
 
+/* Constants */
 const pageSize: number = 6;
+const totalItems: number = 14;
 
+/* Webpart component */
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
   onSelectedItem: (item: any) => void;
 
@@ -48,69 +44,24 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       TASelected: [],
       AASelectedTags: [],
       TASelectedTags: [],
+
+      pageNumber: 1,
+      totalPages: Math.ceil(totalItems / pageSize)
     };
   }
 
   public componentDidMount(): void {
-    this.getSPListItems(this.state.AASelectedTags, this.state.TASelectedTags, 0);
+    this.getSPListItems(this.state.pageNumber);
     this.getAATagListItems();
     this.getTATagListItems();
   }
 
-  public resetLists(): void {
-    if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
-      console.log("reset to all");
-      this._getPage(0);
-    }
-    else {
-      let items = [];
-      const AAtagsList = this.state.AASelectedTags;
-      const TAtagsList = this.state.TASelectedTags;
-
-      this._getPage(0);
-
-      // if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
-      //   for (let i = 0; i < AAtagsList.length; i++) {
-      //     for (let j = 0; j < TAtagsList.length; j++) {
-      //       items = items.concat(this.state.listData.filter(function (item) {
-      //         return ((item.LOOKUPId === AAtagsList[i].ID)
-      //           && (item.LOOKUP2Id === TAtagsList[j].ID));
-      //       }))
-      //     }
-      //   }
-      // } else {
-      //   for (let i = 0; i < AAtagsList.length; i++) {
-      //     items = items.concat(this.state.listData.filter(function (item) {
-      //       return (item.LOOKUPId === AAtagsList[i].ID);
-      //     }))
-      //   }
-      //   for (let j = 0; j < TAtagsList.length; j++) {
-      //     items = items.concat(this.state.listData.filter(function (item) {
-      //       return (item.LOOKUP2Id === TAtagsList[j].ID);
-      //     }))
-      //   }
-
-      // }
-
-      this.setState({
-        paginatedItems: items.slice(0, pageSize),
-        allItems: items
-      })
-    }
-  }
-
-  public noFilterListItems() {
-    throw new Error('Method not implemented.');
-  }
-
   public AAlogChange(val) {
-    // this.setState({ AASelectedTags: val ? val : [] }, () => this.resetLists());
-    this.setState({ AASelectedTags: val ? val : [] }, () => this._getPage(0));
+    this.setState({ AASelectedTags: val ? val : [] }, () => this.getTaggedListItems(1));
   }
 
   public TAlogChange(val) {
-    // this.setState({ TASelectedTags: val ? val : [] }, () => this.resetLists());
-    this.setState({ TASelectedTags: val ? val : [] }, () => this._getPage(0));
+    this.setState({ TASelectedTags: val ? val : [] }, () => this.getTaggedListItems(1));
 
   }
 
@@ -121,23 +72,18 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
           <Select
             className="AA-single"
             classNamePrefix="select"
-            // defaultValue={colourOptions[0]
             isMulti={true}
             isClearable={true}
-            // isRtl={isRtl}
             placeholder="Application Area"
             onChange={(val) => this.AAlogChange(val)}
             name="color"
             options={this.state.AAtags}
-          // styles={customStyles}
           />
           <Select
             className="TA-single"
             classNamePrefix="select"
-            // defaultValue={colourOptions[0]
             isClearable={true}
             isMulti={true}
-            // isRtl={isRtl}
             placeholder="Technology Area"
             onChange={(val) => this.TAlogChange(val)}
             name="color"
@@ -165,13 +111,12 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
           }
         </Grid>
         <Pagination
-          currentPage={1}
-          // totalPages={(this.state.allItems.length / pageSize)}
-          totalPages = {3}
-          onChange={(page) => this._getPage(page)}
+          currentPage={this.state.pageNumber}
+          totalPages={this.state.totalPages}
+          onChange={(page) => this.getSPListItems(page)}
           hideFirstPageJump // Optional
           hideLastPageJump // Optional
-          limiter={3}
+          limiter={2}
         />
       </div>
     );
@@ -195,80 +140,77 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     return null;
   }
 
-  private _getPage(page: number) {
-    // round a number up to the next largest integer.
-    const roundupPage = Math.ceil(page);
-    var retrieveMoreItems = true;
+  private getTaggedListItems(batchNumber) {
+    const AAtagsList = this.state.AASelectedTags;
+      const TAtagsList = this.state.TASelectedTags;
 
-    // while (retrieveMoreItems) {
-      pnp.sp.web.lists.getByTitle("Publication").items.skip((page - 1) * pageSize).top(pageSize).get().then
-      ((Response) => {
-        if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
-          let collection = Response.map(item => new ClassItem(item));
-          this.setState({ listData: collection, allItems: collection, paginatedItems: collection });
-          retrieveMoreItems = false;
-        }
-        else {
-          console.log("yo");
-          const AAtagsList = this.state.AASelectedTags;
-          const TAtagsList = this.state.TASelectedTags;
+      let allListItems = [];
 
-          let collection = Response.map(item => new ClassItem(item));
-          let items = [];
-          for (let i = 0; i < AAtagsList.length; i++) {
-            items = items.concat(collection.filter(function (item) {
-              return (item.LOOKUPId === AAtagsList[i].ID);
-            }))
-          }
+      // Both tag fields have selections 
+      if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
+        for (let i = 0; i < AAtagsList.length; i++) {
           for (let j = 0; j < TAtagsList.length; j++) {
-            items = items.filter(function (item) {
-                  return (item.LOOKUP2Id === TAtagsList[j].ID);
-                })
-              }
-          this.setState({ listData: items, allItems: items, paginatedItems: items });
-          retrieveMoreItems = false;
+            console.log("Two fields selected");
+            pnp.sp.web.lists.getByTitle("Publication").items.filter("LOOKUPId eq '" + AAtagsList[i].ID + "' and LOOKUP2Id eq '" + TAtagsList[j].ID + "'").get().then
+              ((Response) => {
+                console.log(Response);
+                allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
+                this.setState({ listData: allListItems, 
+                  allItems: allListItems, 
+                  paginatedItems: allListItems.slice((batchNumber - 1) * pageSize, batchNumber * pageSize),
+                  totalPages : allListItems.length / pageSize });
+              });
+          }
         }
-      });
-    // }
-    // this.setState({
-    //   paginatedItems: this.state.allItems.slice((roundupPage - 1) * pageSize, ((roundupPage - 1) * pageSize) + pageSize)
-    // });
+      }
+
+      // Only one or the other have selections 
+      else {
+        for (let i = 0; i < AAtagsList.length; i++) {
+          pnp.sp.web.lists.getByTitle("Publication").items.filter("LOOKUPId eq '" + AAtagsList[i].ID + "'").get().then
+            ((Response) => {
+              allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
+              this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems.slice((batchNumber - 1) * pageSize, batchNumber * pageSize),
+                totalPages : allListItems.length / pageSize });
+            })
+        }
+        for (let j = 0; j < TAtagsList.length; j++) {
+          pnp.sp.web.lists.getByTitle("Publication").items.filter("LOOKUP2Id eq '" + TAtagsList[j].ID + "'").get().then
+            ((Response) => {
+              allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
+              this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems.slice((batchNumber - 1) * pageSize, batchNumber * pageSize), 
+                totalPages : allListItems.length / pageSize});
+            })
+        }
+      }
   }
 
-  
+  public getSPListItems(batchNumber) {
 
-  public getSPListItems(AATags, TATags, batchNumber) {
+    console.log(this.getLastListItemID());
 
-    let allListItems = [];
+    // Retrieve all items from the list (default view)
+    if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
+      pnp.sp.web.lists.getByTitle("Publication").items.skip((batchNumber - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "LOOKUPId", "LOOKUP2Id").get().then
+        ((Response) => {
+          let allListItems = Response.map(item => new ClassItem(item));
+          this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems, totalPages : Math.ceil(totalItems / pageSize)});
+        });
+    }
+    // Retrieve items based on selected tags
+    else {
+      this.setState({ paginatedItems : this.state.listData.slice((batchNumber - 1) * pageSize, batchNumber * pageSize)});
+    }
 
-    /* 
-      1. Get 6 items from the site 
-      2. Filter through the 6 items according to the tags and add the wanted items to the list 
-      3. Repeat steps 1 + 2 until we get a list of a length of pageSize or we reach the end of the list 
-      4. If the user clicks on the next button, trigger the process of getting another 6 items 
-    */
-
-    // var list = pnp.sp.web.lists.getByTitle("Publication");
-    
-    
-    // if (AATags === [] && TATags === []) {
-      pnp.sp.web.lists.getByTitle("Publication").items.skip((batchNumber - 1 * pageSize)).top(pageSize).get().then
-      ((Response) => {
-        console.log(Response);
-        allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
-        this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
-        console.log(allListItems);
-      });
-    // }
     // var clientContext = new SP.ClientContext();
     // var list = clientContext.get_web().get_lists().getByTitle("Publication");
     // var camlQuery = new SP.CamlQuery();
 
-    const caml: ICamlQuery = {
-      ViewXml: "<View>" +
-        // Can add some hardcode field references to limit the data that is being retrieved 
-        "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>",
-    };
+    // const caml: ICamlQuery = {
+    //   ViewXml: "<View>" +
+    //     // Can add some hardcode field references to limit the data that is being retrieved 
+    //     "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>",
+    // };
 
     // camlQuery.set_viewXml("<View>" +
     // // Can add some hardcode field references to limit the data that is being retrieved 
@@ -288,16 +230,31 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // // caml.ListItemCollectionPosition 
 
     // while (moreRecords) {
-      // list.getItemsByCAMLQuery(caml).then
-      //   ((Response) => {
-      //     allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
-      //     moreRecords = pageSize === allListItems.length;
-      //     console.log(Response.ListItemCollectionPosition);
+    // list.getItemsByCAMLQuery(caml).then
+    //   ((Response) => {
+    //     allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
+    //     moreRecords = pageSize === allListItems.length;
+    //     console.log(Response.ListItemCollectionPosition);
 
-      //     // caml.ListItemCollectionPosition
-      //     // console.log(caml.ListItemCollectionPosition);
-      //     this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
-      //   })
+    //     // caml.ListItemCollectionPosition
+    //     // console.log(caml.ListItemCollectionPosition);
+    //     this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
+    //   })
+    // }
+
+    // let moreItems = true;
+    // let queryIndex = 0;
+
+    // while (moreItems)
+    // {
+    //   let currQueryItems = [];
+    //   // Get 6 items from the list 
+    //   // pnp.sp.web.lists.getByTitle("Publication").items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "LOOKUPId", "LOOKUP2Id").get().then
+    //   //   ((Response) => {
+    //   //     let currQueryItems = Response.map((item) => new ClassItem(item));
+    //   //     currQueryItems = currQueryItems.filter((item) => )
+    //   //   })      
+    //   // queryIndex = queryIndex + 1;
 
     // }
   }
@@ -315,6 +272,24 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       ((Response) => {
         let tags = Response.map(item => new ClassTag(item));
         this.setState({ TAtags: tags });
+      });
+  }
+
+  public returnLastID(response : number) : number {
+    return response;
+  }
+
+  // Determining the maximum limit for reading the items 
+  public getLastListItemID() {
+    console.log("Getting last list item...");
+    var result = 0;
+
+    pnp.sp.web.lists.getByTitle("Publication")
+    .items.orderBy('Id', false)
+    .top(1)
+    .select('Id')
+    .get().then((Response) => {
+      this.returnLastID(Response[0].Id)
       });
   }
 }
