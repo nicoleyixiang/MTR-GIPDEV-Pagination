@@ -10,6 +10,7 @@ export class ClassItem{
     public RollupImage: string;
     public LOOKUPId: number;
     public LOOKUP2Id: number;
+    public ID : number;
 
     // item parameter is the actual object (entry) being retrieved from the list 
     // item.(fieldname) is how we get each of the fields 
@@ -19,5 +20,10 @@ export class ClassItem{
         this.RollupImage = item.RollupImage;
         this.LOOKUPId = item.LOOKUPId;
         this.LOOKUP2Id = item.LOOKUP2Id;
+        this.ID = item.ID;
+    }
+
+    set image(imageData : string) {
+        this.RollupImage = imageData;
     }
 }

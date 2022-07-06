@@ -7,4 +7,6 @@ export interface ISPItem {
     RollupImage: string;
     LOOKUPId: number;
     LOOKUP2Id: number;
+    ID : number;
+    image : (string) => void;
 }
