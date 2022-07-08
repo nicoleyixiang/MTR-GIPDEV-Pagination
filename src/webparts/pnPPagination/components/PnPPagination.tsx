@@ -11,6 +11,8 @@ import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 
 
+import { scroller } from 'react-scroll';
+
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
 
@@ -22,6 +24,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { Grid } from '@react-ui-org/react-ui';
 import { result } from 'lodash';
+import * as ReactDOM from 'react-dom';
 
 /* Constants */
 const pageSize: number = 6;
@@ -30,6 +33,13 @@ const listName : string = "Publication";
 /* Webpart component */
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
   onSelectedItem: (item: any) => void;
+
+  scrolltoSection = () => {
+    scroller.scrollTo("filtering-box", {
+      smooth: true,
+    });
+    console.log('scrolled');
+  };
 
   constructor(props: IPnPPaginationProps) {
     super(props);
@@ -50,13 +60,25 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     };
   }
 
+  public scrollTop()
+  {
+    console.log("scrolling to top");
+    // window.scrollBy(0, -200);
+    var x = document.getElementById("top");
+    x.scrollBy({top: 100, left: 100, behavior: 'smooth'});
+    // document.body.scrollTop = 0; // For Safari
+    // document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+  }
+
   public componentDidMount(): void {
     // this.getSPListItems(this.state.pageNumber);
-
+    
     this.getAllSPListItems();
 
     this.getAATagListItems();
     this.getTATagListItems();
+    
+    // window.scrollTo(0, 0);
   }
 
   public AAlogChange(val) {
@@ -65,12 +87,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   public TAlogChange(val) {
     this.setState({ TASelectedTags: val ? val : [] }, () => this.getTaggedListItems(1));
-
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
     return (
-      <div className="main__container">
+      <div id="top" className="main__container">
         <div className="filtering-box">
           <Select
             className="AA-single"
@@ -101,9 +122,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
               <div className="card">
                 <img className="card__image" src={item.RollupImage ? JSON.parse(item.RollupImage).serverRelativeUrl : "https://outhink.com/wp-content/themes/outhink-theme/images/ip.jpg"}></img>
                 <div className="card__content">
-                  <div className="card__title">
+                  <strong><a href={"https://waion365.sharepoint.com/sites/MTR-GIPDEV/SitePages/Showcase.aspx" + "?itemid=" + item.ID} className="card__title">
                     {item.Title}
-                  </div>
+                  </a></strong>
                   <div className="tag__container">
                     <div className="AAcard__tag">{this.getAATag(item.LOOKUPId)}</div>
                     <div className="TAcard__tag">{this.getTATag(item.LOOKUP2Id)}</div>
@@ -263,11 +284,50 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       }
     }
   }
-
+  
   public getAllSPListItems() {
-    pnp.sp.web.lists.getByTitle(listName).items.select("Title", "Content_EN", "LOOKUPId", "LOOKUP2Id", "ID").get().then
+    pnp.sp.web.lists.getByTitle(listName).items
+    // .filter("OData__ModerationStatus eq '0'")
+    // .select("Title", "Content_EN", "LOOKUPId", "LOOKUP2Id", "ID")
+    .get().then
       ((Response) => {
         let allListItems = Response.map(item => new ClassItem(item));
+        console.log(allListItems);
+
+        let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
+        let rest = allListItems.filter(item => item.DisplayOrder === null);
+
+        displayOrderItems.sort(function(item1, item2){
+          if(item1.DisplayOrder === null)
+          {
+            return 1;
+          }
+          else if (item2.DisplayOrder === null)
+          {
+            return -1;
+          }
+          return item1.DisplayOrder - item2.DisplayOrder;
+        });
+
+        rest.sort(function(item1, item2) {
+          if (item1.PublishDate === null)
+          {
+            return 1;
+          }
+          else if (item2.PublishDate === null)
+          {
+            return -1;
+          }
+          else {
+            if (item1.PublishDate > item2.PublishDate) return -1
+            return 1;
+          }
+        })
+
+        allListItems = displayOrderItems.concat(rest);
+
+        console.log(allListItems);
+
         this.setState({ pageNumber : 1, listData: allListItems, allItems: allListItems, 
           paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize }, 
           () => this.renderImages());
@@ -292,6 +352,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   public getPage(pageNumber) {
     const rounded = Math.ceil(pageNumber);
+    this.scrolltoSection();
     this.setState({ paginatedItems: this.state.listData.slice((pageNumber - 1) * pageSize, pageNumber * pageSize) }, 
     () => this.renderImages());
   }

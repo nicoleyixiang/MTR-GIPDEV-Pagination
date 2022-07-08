@@ -22,6 +22,7 @@
     "office-ui-fabric-react": "7.185.7",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "react-scroll": "^1.8.7",
     "react-select": "^5.3.2",
     "react-select-plus": "^1.0.0-rc.3.patch12",
     "sp-pnp-js": "^3.0.10",

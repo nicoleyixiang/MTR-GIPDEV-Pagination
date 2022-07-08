@@ -11,6 +11,8 @@ export class ClassItem{
     public LOOKUPId: number;
     public LOOKUP2Id: number;
     public ID : number;
+    public DisplayOrder : number;
+    public PublishDate : string;
 
     // item parameter is the actual object (entry) being retrieved from the list 
     // item.(fieldname) is how we get each of the fields 
@@ -21,6 +23,8 @@ export class ClassItem{
         this.LOOKUPId = item.LOOKUPId;
         this.LOOKUP2Id = item.LOOKUP2Id;
         this.ID = item.ID;
+        this.DisplayOrder = item.DisplayOrder;
+        this.PublishDate = item.PublishDate;
     }
 
     set image(imageData : string) {

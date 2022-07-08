@@ -8,5 +8,8 @@ export interface ISPItem {
     LOOKUPId: number;
     LOOKUP2Id: number;
     ID : number;
+    DisplayOrder : number;
+    PublishDate : string;
+
     image : (string) => void;
 }
