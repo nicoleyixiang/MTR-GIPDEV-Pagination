@@ -5,13 +5,8 @@ import { IPnPPaginationState } from './IPnPPaginationState';
 import { ClassItem } from '../models/ClassItem';
 import { ClassTag } from '../models/ClassTag';
 
-import { ICamlQuery } from '@pnp/sp/lists';
-import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
-
-
-import { scroller } from 'react-scroll';
 
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
@@ -23,9 +18,6 @@ import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { Grid } from '@react-ui-org/react-ui';
-import { result } from 'lodash';
-import * as ReactDOM from 'react-dom';
-
 
 /* Constants */
 const pageSize: number = 6;
@@ -34,13 +26,6 @@ const listName : string = "Publication";
 /* Webpart component */
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
   onSelectedItem: (item: any) => void;
-
-  // private scrolltoSection = () => {
-  //   scroller.scrollTo("main__container", {
-  //     smooth: true,
-  //   });
-  //   console.log('scrolled');
-  // };
 
   private _scrollElement;
   constructor(props: IPnPPaginationProps) {
@@ -65,12 +50,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   public componentDidMount(): void {
-    
     this.getAllSPListItems();
-
     this.getAATagListItems();
     this.getTATagListItems();
-
   }
 
   private scrolltoSection() {
@@ -437,7 +419,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   // }
  
   public getAATagListItems() {
-    pnp.sp.web.lists.getByTitle('SystemParameter').items.filter("Title eq 'ApplicationArea'").getAll().then
+    pnp.sp.web.lists.getByTitle('SystemParameter').items
+    .filter("Title eq 'ApplicationArea'")
+    .getAll().then
     ((Response) => {
       console.log(Response);
       let tags = Response.map(item => new ClassTag(item));
@@ -447,7 +431,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   } 
  
   public getTATagListItems() {
-    pnp.sp.web.lists.getByTitle("SystemParameter").items.filter("Title eq 'RelatedTechnology'").getAll().then
+    pnp.sp.web.lists.getByTitle("SystemParameter").items
+    .filter("Title eq 'RelatedTechnology'")
+    .getAll().then
     ((Response) => {
       let tags = Response.map(item => new ClassTag(item));
       this.setState({ TAtags: tags });
