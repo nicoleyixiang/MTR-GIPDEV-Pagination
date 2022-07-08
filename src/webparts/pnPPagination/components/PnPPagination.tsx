@@ -268,7 +268,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
   
   public getAllSPListItems() {
-
     const now = new Date();
     const nowString = now.toISOString();
 
@@ -331,7 +330,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
         currItem.image = res.RollupImage;
       }
     }
-    this.setState({ pageNumber: 1 });
+    
+    this.forceUpdate();
   }
  
   public getPage(pageNumber) {
