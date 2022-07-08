@@ -107,7 +107,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             classNamePrefix="select"
             isClearable={true}
             isMulti={true}
-            placeholder="Technology Area"
+            placeholder="Related Technology"
             onChange={(val) => this.TAlogChange(val)}
             name="color"
             options={this.state.TAtags}
@@ -125,8 +125,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
                       {item.Title}
                     </a></strong>
                     <div className="tag__container">
-                      <div className="AAcard__tag">{this.getAATag(item.LOOKUPId)}</div>
-                      <div className="TAcard__tag">{this.getTATag(item.LOOKUP2Id)}</div>
+                      <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_ENId)}</div>
+                      <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_ENId)}</div>
                     </div> 
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   private getAATag(idNum) {
     for (let i = 0; i < this.state.AAtags.length; i++) {
       if (this.state.AAtags[i].ID == idNum) {
-        return this.state.AAtags[i].value;
+        return this.state.AAtags[i].Value;
       }
     }
     return null;
@@ -158,7 +158,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   private getTATag(idNum) {
     for (let i = 0; i < this.state.TAtags.length; i++) {
       if (this.state.TAtags[i].ID == idNum) {
-        return this.state.TAtags[i].value;
+        return this.state.TAtags[i].Value;
       }
     }
     return null;
@@ -182,7 +182,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   //   }
 
   //   let qResult = await pnp.sp.web.lists.getByTitle(listName).items.top(pageSize)
-  //   .select("Title", "Content_EN", "LOOKUPId", "LOOKUP2Id").getPaged();
+  //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").getPaged();
 
   //   while (keepQuerying)
   //   {
@@ -199,7 +199,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   //           {
   //             let currItem = new ClassItem(qResult.results[e]);
   //             console.log(currItem);
-  //             if (currItem.LOOKUPId === AAtagsList[i].ID && currItem.LOOKUP2Id === TAtagsList[j].ID)
+  //             if (currItem.ApplicationArea_ENId === AAtagsList[i].ID && currItem.RelatedTechnology_ENId === TAtagsList[j].ID)
   //             {
   //               console.log("helo");
   //               allListItems.push(currItem);
@@ -215,7 +215,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   //         for (let j = 0 ; j < qResult.results.length; j++)
   //         {
   //           let currItem = new ClassItem(qResult.results[j]);
-  //           if (currItem.LOOKUPId === AAtagsList[i].ID) {
+  //           if (currItem.ApplicationArea_ENId === AAtagsList[i].ID) {
   //             allListItems.push(currItem);
   //           }
   //         }
@@ -226,7 +226,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   //         for (let j = 0; j < qResult.results.length; j++) 
   //         {
   //           let currItem = new ClassItem(qResult.results[j]);
-  //           if (currItem.LOOKUP2Id === TAtagsList[i].ID) {
+  //           if (currItem.RelatedTechnology_ENId === TAtagsList[i].ID) {
   //             allListItems.push(currItem);
   //           }
   //         }
@@ -261,8 +261,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
         for (let i = 0; i < AAtagsList.length; i++) {
           for (let j = 0; j < TAtagsList.length; j++) {
-            let listItems = this.state.allItems.filter(item => item.LOOKUP2Id === TAtagsList[j].ID 
-              && item.LOOKUPId === AAtagsList[i].ID);
+            let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID 
+              && item.ApplicationArea_ENId === AAtagsList[i].ID);
             this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
             totalPages : listItems.length / pageSize}, () => this.renderImages());
           }
@@ -272,12 +272,12 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       else {
         console.log("hi!");
         for (let i = 0; i < AAtagsList.length; i++) {
-          let listItems = this.state.allItems.filter(item => item.LOOKUPId === AAtagsList[i].ID);
+          let listItems = this.state.allItems.filter(item => item.ApplicationArea_ENId === AAtagsList[i].ID);
           this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
           totalPages : listItems.length / pageSize }, () => this.renderImages());
         }
         for (let j = 0; j < TAtagsList.length; j++) {
-          let listItems = this.state.allItems.filter(item => item.LOOKUP2Id === TAtagsList[j].ID);
+          let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID);
           this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
           totalPages : listItems.length / pageSize }, () => this.renderImages());
         }
@@ -292,10 +292,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
     pnp.sp.web.lists.getByTitle(listName).items
     .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString + "'")
-    .select("Title", "Content_EN", "LOOKUPId", "LOOKUP2Id", "ID", "DisplayOrder", "PublishDate")
+    .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate")
     .get().then
       ((Response) => {
         let allListItems = Response.map(item => new ClassItem(item));
+        console.log(Response);
 
         let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
         let rest = allListItems.filter(item => item.DisplayOrder === null);
@@ -367,7 +368,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // // Retrieve all items from the list (default view)
     // if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
     //   pnp.sp.web.lists.getByTitle(listName).items.skip((batchNumber - 1) * pageSize).top(pageSize)
-    //   .select("Title", "Content_EN", "LOOKUPId", "LOOKUP2Id").get().then
+    //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
     //     ((Response) => {
     //       let allListItems = Response.map(item => new ClassItem(item));
     //       this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems, totalPages : Math.ceil(totalItems / pageSize)});
@@ -425,7 +426,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // {
     //   let currQueryItems = [];
     //   // Get 6 items from the list 
-    //   // pnp.sp.web.lists.getByTitle(listName).items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "LOOKUPId", "LOOKUP2Id").get().then
+    //   // pnp.sp.web.lists.getByTitle(listName).items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
     //   //   ((Response) => {
     //   //     let currQueryItems = Response.map((item) => new ClassItem(item));
     //   //     currQueryItems = currQueryItems.filter((item) => )
@@ -436,15 +437,17 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   // }
  
   public getAATagListItems() {
-    pnp.sp.web.lists.getByTitle('AATags').items.getAll().then
+    pnp.sp.web.lists.getByTitle('SystemParameter').items.filter("Title eq 'ApplicationArea'").getAll().then
     ((Response) => {
+      console.log(Response);
       let tags = Response.map(item => new ClassTag(item));
+      console.log(tags);
       this.setState({ AAtags: tags });
     });
-  }
+  } 
  
   public getTATagListItems() {
-    pnp.sp.web.lists.getByTitle('TATags').items.getAll().then
+    pnp.sp.web.lists.getByTitle("SystemParameter").items.filter("Title eq 'RelatedTechnology'").getAll().then
     ((Response) => {
       let tags = Response.map(item => new ClassTag(item));
       this.setState({ TAtags: tags });
