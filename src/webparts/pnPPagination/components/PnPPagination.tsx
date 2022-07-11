@@ -50,9 +50,19 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   public componentDidMount(): void {
-    this.getAllSPListItems();
     this.getAATagListItems();
     this.getTATagListItems();
+    const urlParams = new URLSearchParams(window.location.search);
+    const res = urlParams.get("preview");
+
+    console.log(res);
+
+    if(res) {
+      this.getPreviewSPListItems();
+    }
+    else {
+      this.getAllSPListItems();      
+    }
   }
 
   private scrolltoSection() {
@@ -266,14 +276,36 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       }
     }
   }
+
+  public getPreviewSPListItems() {
+
+    const now = new Date();
+    const nowString = now.toISOString();
+
+    pnp.sp.web.lists.getByTitle(listName).items
+    // Need to double check this filter -- should I filter out items that are unpublished?
+    .filter("UnpublishDate gt '" + nowString + "'")
+    .select("OData__ModerationStatus", "Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate")
+    .get().then
+      ((Response) => {
+        let pendingItems = Response.filter(item => item.OData__ModerationStatus === 2).map(item => new ClassItem(item));
+        let rest = Response.filter(item => item.OData__ModerationStatus !== 2).map(item => new ClassItem(item));
+        let allListItems = pendingItems.concat(rest);
+        this.setState({ pageNumber : 1, listData: allListItems, allItems: allListItems, 
+          paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize }, 
+          () => this.renderImages());
+      })
+  }
   
   public getAllSPListItems() {
     const now = new Date();
     const nowString = now.toISOString();
 
+    console.log(nowString);
+
     pnp.sp.web.lists.getByTitle(listName).items
-    .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString + "'")
-    .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate")
+    .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString + "'  and UnpublishDate gt '" + nowString + "'")
+    .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate")
     .get().then
       ((Response) => {
         let allListItems = Response.map(item => new ClassItem(item));
@@ -330,7 +362,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
         currItem.image = res.RollupImage;
       }
     }
-    
+
     this.forceUpdate();
   }
  
@@ -423,9 +455,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     .filter("Title eq 'ApplicationArea'")
     .getAll().then
     ((Response) => {
-      console.log(Response);
       let tags = Response.map(item => new ClassTag(item));
-      console.log(tags);
       this.setState({ AAtags: tags });
     });
   } 
