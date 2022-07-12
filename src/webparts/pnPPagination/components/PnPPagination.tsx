@@ -283,14 +283,44 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     const nowString = now.toISOString();
 
     pnp.sp.web.lists.getByTitle(listName).items
-    // Need to double check this filter -- should I filter out items that are unpublished?
     .filter("UnpublishDate gt '" + nowString + "'")
     .select("OData__ModerationStatus", "Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate")
     .get().then
       ((Response) => {
-        let pendingItems = Response.filter(item => item.OData__ModerationStatus === 2).map(item => new ClassItem(item));
-        let rest = Response.filter(item => item.OData__ModerationStatus !== 2).map(item => new ClassItem(item));
-        let allListItems = pendingItems.concat(rest);
+        let allListItems = Response.map(item => new ClassItem(item));
+        console.log(Response);
+
+        let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
+        let rest = allListItems.filter(item => item.DisplayOrder === null);
+
+        // Sorting items with display order fields in ascending order 
+        displayOrderItems.sort(function(item1, item2){
+          if(item1.DisplayOrder === null)
+          {
+            return 1;
+          }
+          else if (item2.DisplayOrder === null)
+          {
+            return -1;
+          }
+          else if (item1.DisplayOrder - item2.DisplayOrder === 0)
+          {
+            if (item1.PublishDate > item2.PublishDate) return -1;
+            return 1;
+          }
+          return item1.DisplayOrder - item2.DisplayOrder;
+        });
+
+        // Sorting the rest of the list by most recent first 
+        rest.sort(function(item1, item2) {
+          if (item1.PublishDate > item2.PublishDate) return -1;
+          return 1;
+        })
+
+        // Combine both lists with display order items in front
+        allListItems = displayOrderItems.concat(rest);
+
+        // Store into current state
         this.setState({ pageNumber : 1, listData: allListItems, allItems: allListItems, 
           paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize }, 
           () => this.renderImages());
