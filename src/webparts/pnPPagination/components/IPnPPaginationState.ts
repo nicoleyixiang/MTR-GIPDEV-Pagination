@@ -6,13 +6,9 @@ export interface IPnPPaginationState {
     paginatedItems: ISPItem[]; 
     AAtags: ISPTag[];
     listData: ISPItem[];
-    AASelected: ISPItem[];
     TAtags: ISPTag[];
-    TASelected: ISPItem[];
-
     AASelectedTags : ISPTag[];
     TASelectedTags : ISPTag[];
-
     pageNumber : number;
     totalPages : number;
 } 

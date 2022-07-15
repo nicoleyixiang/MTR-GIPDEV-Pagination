@@ -35,22 +35,21 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this._scrollElement = document.querySelector('[data-automation-id="contentScrollRegion"]');
 
     this.state = {
-      listData: [],
-      allItems: [],
-      paginatedItems: [],
-      AAtags: [],
-      AASelected: [],
-      TAtags: [],
-      TASelected: [],
-      AASelectedTags: [],
-      TASelectedTags: [],
+      listData: [],           // Stores the items of the most recent selection by the user  
+      allItems: [],           // Stores all items from the SP list 
+      paginatedItems: [],     // Stores items to be displayed on the current page 
+      AAtags: [],             // Stores all the ApplicationArea tags 
+      TAtags: [],             // Stores all the TechnologyArea tags 
+      AASelectedTags: [],     // Registers the ApplicationArea tags selected by the user 
+      TASelectedTags: [],     // Registers the TechnologyArea tags selected by the user 
 
-      pageNumber: 1,
-      totalPages: 0
+      pageNumber: 1,          // Stores the current page number the user is on 
+      totalPages: 0           // Stores the total number of pages for pagination 
     };
   }
 
   public componentDidMount(): void {
+    // Retrieves the tags from the SP list
     this.getAATagListItems();
     this.getTATagListItems();
 
@@ -75,12 +74,13 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     }, 50);
   }
 
+  // Logs changes in the tag selections
   public AAlogChange(val) {
-    this.setState({ AASelectedTags: val ? val : [] }, () => this.getTaggedListItems(1));
+    this.setState({ AASelectedTags: val ? val : [] }, () => this.getTaggedListItems());
   }
 
   public TAlogChange(val) {
-    this.setState({ TASelectedTags: val ? val : [] }, () => this.getTaggedListItems(1));
+    this.setState({ TASelectedTags: val ? val : [] }, () => this.getTaggedListItems());
   }
 
   public render(): React.ReactElement<IPnPPaginationProps> {
@@ -141,6 +141,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     );
   }
 
+  // Gets the value of the tags based on the ID number 
   private getAATag(idNum) {
     for (let i = 0; i < this.state.AAtags.length; i++) {
       if (this.state.AAtags[i].ID == idNum) {
@@ -241,11 +242,10 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   //   }
   // }
 
-  private getTaggedListItems(batchNumber) {
+  // Filters the items based on selected tags 
+  private getTaggedListItems() {
     const AAtagsList = this.state.AASelectedTags;
     const TAtagsList = this.state.TASelectedTags;
-
-    let allListItems = [];
 
     if (AAtagsList.length === 0 && TAtagsList.length === 0) {
       this.setState({
@@ -293,10 +293,12 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     const nowString = now.toISOString();
 
     pnp.sp.web.lists.getByTitle(listName).items
-      .filter("UnpublishDate gt '" + nowString + "'") // Retrieve items that are not unpublished and not rejected 
+      // Retrieve items that are not unpublished and not rejected 
+      .filter("OData__ModerationStatus ne '1' and UnpublishDate gt '" + nowString + "'")
+      // Retrieving relevant fields only  
       .select("OData__ModerationStatus", "Title", "Content_EN",
         "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID",
-        "DisplayOrder", "PublishDate", "UnpublishDate") // Retrieving relevant fields only 
+        "DisplayOrder", "PublishDate", "UnpublishDate") 
       .get().then
       ((Response) => {
         let filtered = Response.filter(item => item.OData__ModerationStatus !== 1)
@@ -377,8 +379,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this.forceUpdate();
   }
 
-  public getPage(pageNumber) {
-    this.setState({ paginatedItems: this.state.listData.slice((pageNumber - 1) * pageSize, pageNumber * pageSize) },
+  // Gets a subset of the items based on the page number selected by the user 
+  public getPage(pageNum) {
+    this.setState({ paginatedItems: this.state.listData.slice((pageNum - 1) * pageSize, pageNum * pageSize), pageNumber : pageNum },
       () => this.renderImages());
     this.scrolltoSection();
   }

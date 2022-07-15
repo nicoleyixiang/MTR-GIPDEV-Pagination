@@ -2,9 +2,11 @@
 
 ## Summary
 
-Short summary on functionality and used technologies.
+SharePoint webpart built using SPFx, React, and PnPjs. 
 
-[picture of the solution in action, if possible]
+Pulls data from a sharepoint list and displays them in a grid layout with pagination capabilities. 
+
+Dynamic filtering capabilities is also enabled through two dropdown menus. 
 
 ## Used SharePoint Framework Version
 
