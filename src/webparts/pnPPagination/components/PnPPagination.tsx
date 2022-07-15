@@ -20,14 +20,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Grid } from '@react-ui-org/react-ui';
 
 /* Constants */
-const pageSize: number = 6;
-const listName : string = "Publication";
+const pageSize: number = 6; // Number of cards to display per page (pagination) 
+const listName: string = "Publication"; // Name of the list you want to display items from 
 
 /* Webpart component */
 export default class PnPPagination extends React.Component<IPnPPaginationProps, IPnPPaginationState> {
-  onSelectedItem: (item: any) => void;
 
+  onSelectedItem: (item: any) => void;
   private _scrollElement;
+
   constructor(props: IPnPPaginationProps) {
     super(props);
 
@@ -52,23 +53,25 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   public componentDidMount(): void {
     this.getAATagListItems();
     this.getTATagListItems();
+
+    // Retrieving QueryString parameters 
     const urlParams = new URLSearchParams(window.location.search);
     const res = urlParams.get("preview");
-
     console.log(res);
 
-    if(res) {
+    if (res) {
       this.getPreviewSPListItems();
     }
     else {
-      this.getAllSPListItems();      
+      this.getAllSPListItems();
     }
   }
 
+  // Scrolls page back to top 
   private scrolltoSection() {
     this._scrollElement.scrollTop = 0;
     setTimeout(() => {
-      this._scrollElement.scrollTop = 0; // first scroll doesn't go to the very top. 
+      this._scrollElement.scrollTop = 0;
     }, 50);
   }
 
@@ -103,7 +106,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             onChange={(val) => this.TAlogChange(val)}
             name="color"
             options={this.state.TAtags}
-          /> 
+          />
         </div>
         <div className="grid__items">
           <Grid columns="repeat(auto-fit, minmax(450px, max-content))"
@@ -119,11 +122,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
                     <div className="tag__container">
                       <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_ENId)}</div>
                       <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_ENId)}</div>
-                    </div> 
+                    </div>
                   </div>
                 </div>
               )
-            } 
+            }
           </Grid>
         </div>
         <Pagination
@@ -245,18 +248,22 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     let allListItems = [];
 
     if (AAtagsList.length === 0 && TAtagsList.length === 0) {
-      this.setState({ listData : this.state.allItems, paginatedItems : this.state.allItems.slice(0, pageSize),
-        totalPages : this.state.allItems.length / pageSize});
+      this.setState({
+        listData: this.state.allItems, paginatedItems: this.state.allItems.slice(0, pageSize),
+        totalPages: this.state.allItems.length / pageSize
+      });
     }
     else {
       // Both tag fields have selections 
       if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
         for (let i = 0; i < AAtagsList.length; i++) {
           for (let j = 0; j < TAtagsList.length; j++) {
-            let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID 
+            let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID
               && item.ApplicationArea_ENId === AAtagsList[i].ID);
-            this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
-            totalPages : listItems.length / pageSize}, () => this.renderImages());
+            this.setState({
+              listData: listItems, paginatedItems: listItems.slice(0, pageSize),
+              totalPages: listItems.length / pageSize
+            }, () => this.renderImages());
           }
         }
       }
@@ -265,117 +272,91 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
         console.log("hi!");
         for (let i = 0; i < AAtagsList.length; i++) {
           let listItems = this.state.allItems.filter(item => item.ApplicationArea_ENId === AAtagsList[i].ID);
-          this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
-          totalPages : listItems.length / pageSize }, () => this.renderImages());
+          this.setState({
+            listData: listItems, paginatedItems: listItems.slice(0, pageSize),
+            totalPages: listItems.length / pageSize
+          }, () => this.renderImages());
         }
         for (let j = 0; j < TAtagsList.length; j++) {
           let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID);
-          this.setState({ listData : listItems, paginatedItems : listItems.slice(0, pageSize),
-          totalPages : listItems.length / pageSize }, () => this.renderImages());
+          this.setState({
+            listData: listItems, paginatedItems: listItems.slice(0, pageSize),
+            totalPages: listItems.length / pageSize
+          }, () => this.renderImages());
         }
       }
     }
   }
 
   public getPreviewSPListItems() {
-
     const now = new Date();
     const nowString = now.toISOString();
 
     pnp.sp.web.lists.getByTitle(listName).items
-    .filter("UnpublishDate gt '" + nowString + "'")
-    .select("OData__ModerationStatus", "Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate")
-    .get().then
+      .filter("UnpublishDate gt '" + nowString + "'") // Retrieve items that are not unpublished and not rejected 
+      .select("OData__ModerationStatus", "Title", "Content_EN",
+        "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID",
+        "DisplayOrder", "PublishDate", "UnpublishDate") // Retrieving relevant fields only 
+      .get().then
       ((Response) => {
-        let allListItems = Response.map(item => new ClassItem(item));
-        console.log(Response);
-
-        let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
-        let rest = allListItems.filter(item => item.DisplayOrder === null);
-
-        // Sorting items with display order fields in ascending order 
-        displayOrderItems.sort(function(item1, item2){
-          if(item1.DisplayOrder === null)
-          {
-            return 1;
-          }
-          else if (item2.DisplayOrder === null)
-          {
-            return -1;
-          }
-          else if (item1.DisplayOrder - item2.DisplayOrder === 0)
-          {
-            if (item1.PublishDate > item2.PublishDate) return -1;
-            return 1;
-          }
-          return item1.DisplayOrder - item2.DisplayOrder;
-        });
-
-        // Sorting the rest of the list by most recent first 
-        rest.sort(function(item1, item2) {
-          if (item1.PublishDate > item2.PublishDate) return -1;
-          return 1;
-        })
-
-        // Combine both lists with display order items in front
-        allListItems = displayOrderItems.concat(rest);
-
-        // Store into current state
-        this.setState({ pageNumber : 1, listData: allListItems, allItems: allListItems, 
-          paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize }, 
-          () => this.renderImages());
+        let filtered = Response.filter(item => item.OData__ModerationStatus !== 1)
+        this.setListItems(filtered);
       })
   }
-  
+
   public getAllSPListItems() {
     const now = new Date();
     const nowString = now.toISOString();
 
-    console.log(nowString);
-
     pnp.sp.web.lists.getByTitle(listName).items
-    .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString + "'  and UnpublishDate gt '" + nowString + "'")
-    .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate")
-    .get().then
+      // OData__ModerationStatus = 0 means the item was approved 
+      .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString +
+        "'  and UnpublishDate gt '" + nowString + "'") // Retrieve items that are published and approved  
+      .select("Title", "Content_EN", "ApplicationArea_ENId",
+        "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate") // Retrieving relevant fields only 
+      .get().then
       ((Response) => {
-        let allListItems = Response.map(item => new ClassItem(item));
-        console.log(Response);
-
-        let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
-        let rest = allListItems.filter(item => item.DisplayOrder === null);
-
-        // Sorting items with display order fields in ascending order 
-        displayOrderItems.sort(function(item1, item2){
-          if(item1.DisplayOrder === null)
-          {
-            return 1;
-          }
-          else if (item2.DisplayOrder === null)
-          {
-            return -1;
-          }
-          else if (item1.DisplayOrder - item2.DisplayOrder === 0)
-          {
-            if (item1.PublishDate > item2.PublishDate) return -1;
-            return 1;
-          }
-          return item1.DisplayOrder - item2.DisplayOrder;
-        });
-
-        // Sorting the rest of the list by most recent first 
-        rest.sort(function(item1, item2) {
-          if (item1.PublishDate > item2.PublishDate) return -1;
-          return 1;
-        })
-
-        // Combine both lists with display order items in front
-        allListItems = displayOrderItems.concat(rest);
-
-        // Store into current state
-        this.setState({ pageNumber : 1, listData: allListItems, allItems: allListItems, 
-          paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize }, 
-          () => this.renderImages());
+        this.setListItems(Response);
       })
+  }
+
+  private setListItems(response) {
+    let allListItems = response.map(item => new ClassItem(item));
+    console.log(response);
+
+    let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
+    let rest = allListItems.filter(item => item.DisplayOrder === null);
+
+    // Sorting items with display order fields in ascending order 
+    displayOrderItems.sort(function (item1, item2) {
+      if (item1.DisplayOrder === null) {
+        return 1;
+      }
+      else if (item2.DisplayOrder === null) {
+        return -1;
+      }
+      else if (item1.DisplayOrder - item2.DisplayOrder === 0) {
+        if (item1.PublishDate > item2.PublishDate) return -1;
+        return 1;
+      }
+      return item1.DisplayOrder - item2.DisplayOrder;
+    });
+
+    // Sorting the rest of the list by most recent first 
+    rest.sort(function (item1, item2) {
+      if (item1.PublishDate > item2.PublishDate) return -1;
+      return 1;
+    })
+
+    // Combine both lists with display order items in front
+    allListItems = displayOrderItems.concat(rest);
+
+    // Store into current state
+    this.setState({
+      pageNumber: 1, listData: allListItems, allItems: allListItems,
+      paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize
+    },
+      () => this.renderImages());
   }
 
   // Retrieve images of the items displaying on the current page
@@ -395,108 +376,107 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
     this.forceUpdate();
   }
- 
+
   public getPage(pageNumber) {
-    const rounded = Math.ceil(pageNumber);
-    this.setState({ paginatedItems: this.state.listData.slice((pageNumber - 1) * pageSize, pageNumber * pageSize) }, 
-    () => this.renderImages());
+    this.setState({ paginatedItems: this.state.listData.slice((pageNumber - 1) * pageSize, pageNumber * pageSize) },
+      () => this.renderImages());
     this.scrolltoSection();
   }
 
   // public getSPListItems(batchNumber) {
 
-    // // Need to store the items locally once you get them to enable a back button features
-    // console.log(this.getLastListItemID());
-    // console.log(batchNumber);
+  // // Need to store the items locally once you get them to enable a back button features
+  // console.log(this.getLastListItemID());
+  // console.log(batchNumber);
 
-    // // Retrieve all items from the list (default view)
-    // if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
-    //   pnp.sp.web.lists.getByTitle(listName).items.skip((batchNumber - 1) * pageSize).top(pageSize)
-    //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
-    //     ((Response) => {
-    //       let allListItems = Response.map(item => new ClassItem(item));
-    //       this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems, totalPages : Math.ceil(totalItems / pageSize)});
-    //     });
-    // }
-    // // Retrieve items based on selected tags
-    // else {
-    //   this.setState({ paginatedItems : this.state.listData.slice((batchNumber - 1) * pageSize, batchNumber * pageSize)});
-    // }
-
-    // var clientContext = new SP.ClientContext();
-    // var list = clientContext.get_web().get_lists().getByTitle(listName);
-    // var camlQuery = new SP.CamlQuery();
-
-    // const caml: ICamlQuery = {
-    //   ViewXml: "<View>" +
-    //     // Can add some hardcode field references to limit the data that is being retrieved 
-    //     "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>",
-    // };
-
-    // camlQuery.set_viewXml("<View>" +
-    // // Can add some hardcode field references to limit the data that is being retrieved 
-    // "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>");
-
-    // var items = list.getItems(camlQuery);
-    // clientContext.load(items);
-    // clientContext.executeQueryAsync(function() {
-    //   var itemArray = [];
-    //   var itemEnumerator = items.getEnumerator();
-    //   while(itemEnumerator.moveNext()) {
-    //     var item = itemEnumerator.get_current();
-    //     console.log(item);
-    //     console.log("next");
-    //   }
-    // })
-    // // caml.ListItemCollectionPosition 
-
-    // while (moreRecords) {
-    // list.getItemsByCAMLQuery(caml).then
-    //   ((Response) => {
-    //     allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
-    //     moreRecords = pageSize === allListItems.length;
-    //     console.log(Response.ListItemCollectionPosition);
-
-    //     // caml.ListItemCollectionPosition
-    //     // console.log(caml.ListItemCollectionPosition);
-    //     this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
-    //   })
-    // }
-
-    // let moreItems = true;
-    // let queryIndex = 0;
-
-    // while (moreItems)
-    // {
-    //   let currQueryItems = [];
-    //   // Get 6 items from the list 
-    //   // pnp.sp.web.lists.getByTitle(listName).items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
-    //   //   ((Response) => {
-    //   //     let currQueryItems = Response.map((item) => new ClassItem(item));
-    //   //     currQueryItems = currQueryItems.filter((item) => )
-    //   //   })      
-    //   // queryIndex = queryIndex + 1;
-
-    // }
+  // // Retrieve all items from the list (default view)
+  // if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
+  //   pnp.sp.web.lists.getByTitle(listName).items.skip((batchNumber - 1) * pageSize).top(pageSize)
+  //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
+  //     ((Response) => {
+  //       let allListItems = Response.map(item => new ClassItem(item));
+  //       this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems, totalPages : Math.ceil(totalItems / pageSize)});
+  //     });
   // }
- 
+  // // Retrieve items based on selected tags
+  // else {
+  //   this.setState({ paginatedItems : this.state.listData.slice((batchNumber - 1) * pageSize, batchNumber * pageSize)});
+  // }
+
+  // var clientContext = new SP.ClientContext();
+  // var list = clientContext.get_web().get_lists().getByTitle(listName);
+  // var camlQuery = new SP.CamlQuery();
+
+  // const caml: ICamlQuery = {
+  //   ViewXml: "<View>" +
+  //     // Can add some hardcode field references to limit the data that is being retrieved 
+  //     "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>",
+  // };
+
+  // camlQuery.set_viewXml("<View>" +
+  // // Can add some hardcode field references to limit the data that is being retrieved 
+  // "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>");
+
+  // var items = list.getItems(camlQuery);
+  // clientContext.load(items);
+  // clientContext.executeQueryAsync(function() {
+  //   var itemArray = [];
+  //   var itemEnumerator = items.getEnumerator();
+  //   while(itemEnumerator.moveNext()) {
+  //     var item = itemEnumerator.get_current();
+  //     console.log(item);
+  //     console.log("next");
+  //   }
+  // })
+  // // caml.ListItemCollectionPosition 
+
+  // while (moreRecords) {
+  // list.getItemsByCAMLQuery(caml).then
+  //   ((Response) => {
+  //     allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
+  //     moreRecords = pageSize === allListItems.length;
+  //     console.log(Response.ListItemCollectionPosition);
+
+  //     // caml.ListItemCollectionPosition
+  //     // console.log(caml.ListItemCollectionPosition);
+  //     this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
+  //   })
+  // }
+
+  // let moreItems = true;
+  // let queryIndex = 0;
+
+  // while (moreItems)
+  // {
+  //   let currQueryItems = [];
+  //   // Get 6 items from the list 
+  //   // pnp.sp.web.lists.getByTitle(listName).items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
+  //   //   ((Response) => {
+  //   //     let currQueryItems = Response.map((item) => new ClassItem(item));
+  //   //     currQueryItems = currQueryItems.filter((item) => )
+  //   //   })      
+  //   // queryIndex = queryIndex + 1;
+
+  // }
+  // }
+
   public getAATagListItems() {
     pnp.sp.web.lists.getByTitle('SystemParameter').items
-    .filter("Title eq 'ApplicationArea'")
-    .getAll().then
-    ((Response) => {
-      let tags = Response.map(item => new ClassTag(item));
-      this.setState({ AAtags: tags });
-    });
-  } 
- 
+      .filter("Title eq 'ApplicationArea'")
+      .getAll().then
+      ((Response) => {
+        let tags = Response.map(item => new ClassTag(item));
+        this.setState({ AAtags: tags });
+      });
+  }
+
   public getTATagListItems() {
     pnp.sp.web.lists.getByTitle("SystemParameter").items
-    .filter("Title eq 'RelatedTechnology'")
-    .getAll().then
-    ((Response) => {
-      let tags = Response.map(item => new ClassTag(item));
-      this.setState({ TAtags: tags });
-    });
+      .filter("Title eq 'RelatedTechnology'")
+      .getAll().then
+      ((Response) => {
+        let tags = Response.map(item => new ClassTag(item));
+        this.setState({ TAtags: tags });
+      });
   }
 }

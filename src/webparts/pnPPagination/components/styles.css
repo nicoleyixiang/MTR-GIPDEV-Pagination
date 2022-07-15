@@ -35,7 +35,7 @@
 
 .card__image {
     width: 100%;
-    height: 350px;
+    height: 330px;
     object-fit: cover;
     display: block;
 }
@@ -43,7 +43,7 @@
 .card__content {
     padding: 15px;
     background: white;
-    height: 100px;
+    height: max-content;
 }
 
 .card__title {
@@ -61,12 +61,21 @@
                               displayed */
     -webkit-box-orient: vertical;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    padding-bottom: 15px;
 }
 
 .card__title:hover {
     text-decoration: underline;
     cursor: pointer;
     color: blue;
+}
+
+.tag__container {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    margin-bottom: 10px;
+    bottom: 0;
 }
 
 .AAcard__tag {
@@ -144,15 +153,7 @@
     width: 30%;
 }
 
-.tag__container {
-    display: flex;
-    flex-direction: row;
-    position: absolute;
-    margin-bottom: 10px;
-    bottom: 0;
-}
-
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 1325px) {
     .AA-single {
         width: 50%;
     }
@@ -164,5 +165,6 @@
     .grid__items {
         display: flex;
         justify-content: center;
+        justify-items: center;
     }
 }
