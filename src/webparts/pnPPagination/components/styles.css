@@ -15,22 +15,11 @@
     margin: 0 auto;
 }
 
-.cards {
-    max-width: 1000px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
-    grid-auto-rows: auto;
-    gap: 20px;
-    padding-top: 30px;
-}
-
-.cards * {
-    box-sizing: border-box;
-}
-
 .card {
     width: 450px;
     height: 450px;
+    border: none;
+    border-width: 0;
 }
 
 .card__image {

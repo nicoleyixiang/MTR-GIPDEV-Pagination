@@ -56,7 +56,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // Retrieving QueryString parameters 
     const urlParams = new URLSearchParams(window.location.search);
     const res = urlParams.get("preview");
-    console.log(res);
 
     if (res) {
       this.getPreviewSPListItems();
@@ -244,48 +243,31 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   // Filters the items based on selected tags 
   private getTaggedListItems() {
-    const AAtagsList = this.state.AASelectedTags;
-    const TAtagsList = this.state.TASelectedTags;
+    let AAtagsList = this.state.AASelectedTags.map(i => i.ID.toString());
+    let TAtagsList = this.state.TASelectedTags.map(i => i.ID.toString());
 
-    if (AAtagsList.length === 0 && TAtagsList.length === 0) {
-      this.setState({
-        listData: this.state.allItems, paginatedItems: this.state.allItems.slice(0, pageSize),
-        totalPages: this.state.allItems.length / pageSize
-      });
+    if (AAtagsList.length === 0) AAtagsList.push("");
+    if (TAtagsList.length === 0) TAtagsList.push("");
+
+    var filters = {
+      ApplicationArea_ENId: AAtagsList,
+      RelatedTechnology_ENId: TAtagsList
+    };
+
+    function multiFilter(array, filters) {
+      return array.filter(o =>
+        Object.keys(filters).every(k =>
+          [].concat(filters[k]).some(v => v === "" || o[k].toString().includes(v))));
     }
-    else {
-      // Both tag fields have selections 
-      if (AAtagsList.length !== 0 && TAtagsList.length !== 0) {
-        for (let i = 0; i < AAtagsList.length; i++) {
-          for (let j = 0; j < TAtagsList.length; j++) {
-            let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID
-              && item.ApplicationArea_ENId === AAtagsList[i].ID);
-            this.setState({
-              listData: listItems, paginatedItems: listItems.slice(0, pageSize),
-              totalPages: listItems.length / pageSize
-            }, () => this.renderImages());
-          }
-        }
-      }
-      // Only one or the other have selections 
-      else {
-        console.log("hi!");
-        for (let i = 0; i < AAtagsList.length; i++) {
-          let listItems = this.state.allItems.filter(item => item.ApplicationArea_ENId === AAtagsList[i].ID);
-          this.setState({
-            listData: listItems, paginatedItems: listItems.slice(0, pageSize),
-            totalPages: listItems.length / pageSize
-          }, () => this.renderImages());
-        }
-        for (let j = 0; j < TAtagsList.length; j++) {
-          let listItems = this.state.allItems.filter(item => item.RelatedTechnology_ENId === TAtagsList[j].ID);
-          this.setState({
-            listData: listItems, paginatedItems: listItems.slice(0, pageSize),
-            totalPages: listItems.length / pageSize
-          }, () => this.renderImages());
-        }
-      }
-    }
+
+    let filtered = multiFilter(this.state.allItems, filters);
+    console.log(filtered);
+
+    this.setState({
+      listData: filtered, paginatedItems: filtered.slice(0, pageSize),
+      totalPages: filtered.length / pageSize
+    }, () => this.renderImages());
+
   }
 
   public getPreviewSPListItems() {
@@ -298,7 +280,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       // Retrieving relevant fields only  
       .select("OData__ModerationStatus", "Title", "Content_EN",
         "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID",
-        "DisplayOrder", "PublishDate", "UnpublishDate") 
+        "DisplayOrder", "PublishDate", "UnpublishDate")
       .get().then
       ((Response) => {
         let filtered = Response.filter(item => item.OData__ModerationStatus !== 1)
@@ -381,7 +363,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   // Gets a subset of the items based on the page number selected by the user 
   public getPage(pageNum) {
-    this.setState({ paginatedItems: this.state.listData.slice((pageNum - 1) * pageSize, pageNum * pageSize), pageNumber : pageNum },
+    this.setState({ paginatedItems: this.state.listData.slice((pageNum - 1) * pageSize, pageNum * pageSize), pageNumber: pageNum },
       () => this.renderImages());
     this.scrolltoSection();
   }
