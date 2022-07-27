@@ -42,7 +42,10 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       TAtags: [],             // Stores all the TechnologyArea tags 
       AASelectedTags: [],     // Registers the ApplicationArea tags selected by the user 
       TASelectedTags: [],     // Registers the TechnologyArea tags selected by the user 
-
+      webUrl : "",
+      isChinese : false,
+      AADisplayText : "Application Area",
+      TADisplayText : "Related Technology",
       pageNumber: 1,          // Stores the current page number the user is on 
       totalPages: 0           // Stores the total number of pages for pagination 
     };
@@ -56,6 +59,16 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // Retrieving QueryString parameters 
     const urlParams = new URLSearchParams(window.location.search);
     const res = urlParams.get("preview");
+
+    // Checking for language 
+    const url = window.location.href;
+    if (url.search("/CH/") !== -1) {
+      this.setState({ isChinese : true });
+    }
+
+    pnp.sp.web.select("ServerRelativeUrl").get().then((Response) => {
+      this.setState({ webUrl : Response.ServerRelativeUrl});
+    })
 
     if (res) {
       this.getPreviewSPListItems();
@@ -91,7 +104,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             classNamePrefix="select"
             isMulti={true}
             isClearable={true}
-            placeholder="Application Area"
+            placeholder={this.state.AADisplayText}
             onChange={(val) => this.AAlogChange(val)}
             name="color"
             options={this.state.AAtags}
@@ -101,32 +114,34 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             classNamePrefix="select"
             isClearable={true}
             isMulti={true}
-            placeholder="Related Technology"
+            placeholder={this.state.TADisplayText}
             onChange={(val) => this.TAlogChange(val)}
             name="color"
             options={this.state.TAtags}
           />
         </div>
         <div className="grid__items">
-          <Grid columns="repeat(auto-fit, minmax(450px, max-content))"
-            columnGap="2.5rem" rowGap="2rem" padding-left="3px">
+          {/* <Grid columns="repeat(auto-fit, minmax(440px, max-content))"
+            columnGap="2.5rem" rowGap="2rem" padding-left="3px"> */}
             {
               this.state.paginatedItems.map((item) =>
                 <div className="card">
                   <img className="card__image" src={item.RollupImage ? JSON.parse(item.RollupImage).serverRelativeUrl : "https://outhink.com/wp-content/themes/outhink-theme/images/ip.jpg"}></img>
                   <div className="card__content">
-                    <strong><a href={"https://waion365.sharepoint.com/sites/MTR-GIPDEV/SitePages/Showcase.aspx" + "?itemid=" + item.ID} className="card__title">
+                    <strong>
+                      <a href={this.state.webUrl + "/SitePages/PublicationDetails.aspx" + "?itemid=" + item.ID} className="card__title">
                       {item.Title}
-                    </a></strong>
+                      </a>
+                    </strong>
                     <div className="tag__container">
-                      <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_ENId)}</div>
-                      <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_ENId)}</div>
+                      <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_Id)}</div>
+                      <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_Id)}</div>
                     </div>
                   </div>
                 </div>
               )
             }
-          </Grid>
+          {/* </Grid> */}
         </div>
         <Pagination
           currentPage={this.state.pageNumber}
@@ -144,6 +159,9 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   private getAATag(idNum) {
     for (let i = 0; i < this.state.AAtags.length; i++) {
       if (this.state.AAtags[i].ID == idNum) {
+        if (this.state.isChinese) {
+          return this.state.AAtags[i].Value_CH
+        }
         return this.state.AAtags[i].Value;
       }
     }
@@ -153,93 +171,14 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   private getTATag(idNum) {
     for (let i = 0; i < this.state.TAtags.length; i++) {
       if (this.state.TAtags[i].ID == idNum) {
-        return this.state.TAtags[i].Value;
+        if (this.state.isChinese) {
+          return this.state.TAtags[i].Value_CH
+        }
+        return this.state.TAtags[i].Value;      
       }
     }
     return null;
   }
-
-  // private async getTaggedListItems(batchNumber) {
-
-  //   const AAtagsList = this.state.AASelectedTags;
-  //   const TAtagsList = this.state.TASelectedTags;
-
-  //   let allListItems = [];
-  //   let keepQuerying = false;
-
-  //   if (AAtagsList.length === 0 && TAtagsList.length === 0)
-  //   {
-  //     keepQuerying = false;
-  //     this.getSPListItems(batchNumber);
-  //   }
-  //   else {
-  //     keepQuerying = true;
-  //   }
-
-  //   let qResult = await pnp.sp.web.lists.getByTitle(listName).items.top(pageSize)
-  //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").getPaged();
-
-  //   while (keepQuerying)
-  //   {
-  //     if (AAtagsList.length !== 0 && TAtagsList.length !== 0)
-  //     {
-  //       console.log("Multiple selected");
-  //       for (let i = 0; i < AAtagsList.length; i++) 
-  //       {
-  //         console.log(AAtagsList[i].ID);
-  //         for (let j = 0; j < TAtagsList.length; j++)
-  //         {
-  //           console.log(TAtagsList[j].ID);
-  //           for (let e = 0; e < qResult.results.length; e++)
-  //           {
-  //             let currItem = new ClassItem(qResult.results[e]);
-  //             console.log(currItem);
-  //             if (currItem.ApplicationArea_ENId === AAtagsList[i].ID && currItem.RelatedTechnology_ENId === TAtagsList[j].ID)
-  //             {
-  //               console.log("helo");
-  //               allListItems.push(currItem);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //     else 
-  //     {
-  //       for (let i = 0; i < AAtagsList.length; i++)
-  //       {
-  //         for (let j = 0 ; j < qResult.results.length; j++)
-  //         {
-  //           let currItem = new ClassItem(qResult.results[j]);
-  //           if (currItem.ApplicationArea_ENId === AAtagsList[i].ID) {
-  //             allListItems.push(currItem);
-  //           }
-  //         }
-  //       }
-
-  //       for (let i = 0; i < TAtagsList.length; i++)
-  //       {
-  //         for (let j = 0; j < qResult.results.length; j++) 
-  //         {
-  //           let currItem = new ClassItem(qResult.results[j]);
-  //           if (currItem.RelatedTechnology_ENId === TAtagsList[i].ID) {
-  //             allListItems.push(currItem);
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     if (qResult.hasNext && allListItems.length < pageSize) {
-  //       console.log("hello");
-  //       qResult = await qResult.getNext();
-  //     }
-  //     else {
-  //       // qResult = await qResult.getNext(); 
-  //       console.log("done");
-  //       keepQuerying = false;
-  //       this.setState({paginatedItems : allListItems.slice((batchNumber - 1) * pageSize, batchNumber * pageSize), pageNumber : 1});
-  //     }
-  //   }
-  // }
 
   // Filters the items based on selected tags 
   private getTaggedListItems() {
@@ -257,7 +196,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     function multiFilter(array, filters) {
       return array.filter(o =>
         Object.keys(filters).every(k =>
-          [].concat(filters[k]).some(v => v === "" || o[k].toString().includes(v))));
+          [].concat(filters[k]).some(v => v === "" || (o[k] && o[k].toString() === v))));
     }
 
     let filtered = multiFilter(this.state.allItems, filters);
@@ -265,7 +204,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
     this.setState({
       listData: filtered, paginatedItems: filtered.slice(0, pageSize),
-      totalPages: filtered.length / pageSize
+      totalPages: Math.ceil(filtered.length / pageSize)
     }, () => this.renderImages());
 
   }
@@ -278,7 +217,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       // Retrieve items that are not unpublished and not rejected 
       .filter("OData__ModerationStatus ne '1' and UnpublishDate gt '" + nowString + "'")
       // Retrieving relevant fields only  
-      .select("OData__ModerationStatus", "Title", "Content_EN",
+      .select("OData__ModerationStatus", "Title", "Title_CH", "Content_EN",
         "ApplicationArea_ENId", "RelatedTechnology_ENId", "ID",
         "DisplayOrder", "PublishDate", "UnpublishDate")
       .get().then
@@ -296,7 +235,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       // OData__ModerationStatus = 0 means the item was approved 
       .filter("OData__ModerationStatus eq '0' and PublishDate lt '" + nowString +
         "'  and UnpublishDate gt '" + nowString + "'") // Retrieve items that are published and approved  
-      .select("Title", "Content_EN", "ApplicationArea_ENId",
+      .select("Title", "Title_CH", "Content_EN", "ApplicationArea_ENId",
         "RelatedTechnology_ENId", "ID", "DisplayOrder", "PublishDate", "UnpublishDate") // Retrieving relevant fields only 
       .get().then
       ((Response) => {
@@ -305,7 +244,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   private setListItems(response) {
-    let allListItems = response.map(item => new ClassItem(item));
+    let allListItems = response.map(item => new ClassItem(item, this.state.isChinese));
     console.log(response);
 
     let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
@@ -338,7 +277,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // Store into current state
     this.setState({
       pageNumber: 1, listData: allListItems, allItems: allListItems,
-      paginatedItems: allListItems.slice(0, pageSize), totalPages: allListItems.length / pageSize
+      paginatedItems: allListItems.slice(0, pageSize), totalPages: Math.ceil(allListItems.length / pageSize)
     },
       () => this.renderImages());
   }
@@ -368,89 +307,12 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this.scrolltoSection();
   }
 
-  // public getSPListItems(batchNumber) {
-
-  // // Need to store the items locally once you get them to enable a back button features
-  // console.log(this.getLastListItemID());
-  // console.log(batchNumber);
-
-  // // Retrieve all items from the list (default view)
-  // if (this.state.AASelectedTags.length === 0 && this.state.TASelectedTags.length === 0) {
-  //   pnp.sp.web.lists.getByTitle(listName).items.skip((batchNumber - 1) * pageSize).top(pageSize)
-  //   .select("Title", "Content_EN", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
-  //     ((Response) => {
-  //       let allListItems = Response.map(item => new ClassItem(item));
-  //       this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems, totalPages : Math.ceil(totalItems / pageSize)});
-  //     });
-  // }
-  // // Retrieve items based on selected tags
-  // else {
-  //   this.setState({ paginatedItems : this.state.listData.slice((batchNumber - 1) * pageSize, batchNumber * pageSize)});
-  // }
-
-  // var clientContext = new SP.ClientContext();
-  // var list = clientContext.get_web().get_lists().getByTitle(listName);
-  // var camlQuery = new SP.CamlQuery();
-
-  // const caml: ICamlQuery = {
-  //   ViewXml: "<View>" +
-  //     // Can add some hardcode field references to limit the data that is being retrieved 
-  //     "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>",
-  // };
-
-  // camlQuery.set_viewXml("<View>" +
-  // // Can add some hardcode field references to limit the data that is being retrieved 
-  // "<RowLimit Paged='TRUE'>" + pageSize + "</RowLimit></View>");
-
-  // var items = list.getItems(camlQuery);
-  // clientContext.load(items);
-  // clientContext.executeQueryAsync(function() {
-  //   var itemArray = [];
-  //   var itemEnumerator = items.getEnumerator();
-  //   while(itemEnumerator.moveNext()) {
-  //     var item = itemEnumerator.get_current();
-  //     console.log(item);
-  //     console.log("next");
-  //   }
-  // })
-  // // caml.ListItemCollectionPosition 
-
-  // while (moreRecords) {
-  // list.getItemsByCAMLQuery(caml).then
-  //   ((Response) => {
-  //     allListItems = allListItems.concat(Response.map(item => new ClassItem(item)));
-  //     moreRecords = pageSize === allListItems.length;
-  //     console.log(Response.ListItemCollectionPosition);
-
-  //     // caml.ListItemCollectionPosition
-  //     // console.log(caml.ListItemCollectionPosition);
-  //     this.setState({ listData: allListItems, allItems: allListItems, paginatedItems: allListItems });
-  //   })
-  // }
-
-  // let moreItems = true;
-  // let queryIndex = 0;
-
-  // while (moreItems)
-  // {
-  //   let currQueryItems = [];
-  //   // Get 6 items from the list 
-  //   // pnp.sp.web.lists.getByTitle(listName).items.skip((queryIndex - 1) * pageSize).top(pageSize).select("Title", "Content_EN", "RollupImage", "ApplicationArea_ENId", "RelatedTechnology_ENId").get().then
-  //   //   ((Response) => {
-  //   //     let currQueryItems = Response.map((item) => new ClassItem(item));
-  //   //     currQueryItems = currQueryItems.filter((item) => )
-  //   //   })      
-  //   // queryIndex = queryIndex + 1;
-
-  // }
-  // }
-
   public getAATagListItems() {
     pnp.sp.web.lists.getByTitle('SystemParameter').items
       .filter("Title eq 'ApplicationArea'")
       .getAll().then
       ((Response) => {
-        let tags = Response.map(item => new ClassTag(item));
+        let tags = Response.map(item => new ClassTag(item, this.state.isChinese));
         this.setState({ AAtags: tags });
       });
   }
@@ -460,7 +322,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
       .filter("Title eq 'RelatedTechnology'")
       .getAll().then
       ((Response) => {
-        let tags = Response.map(item => new ClassTag(item));
+        let tags = Response.map(item => new ClassTag(item, this.state.isChinese));
         this.setState({ TAtags: tags });
       });
   }

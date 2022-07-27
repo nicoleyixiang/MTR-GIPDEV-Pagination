@@ -6,4 +6,5 @@ export interface ISPTag {
     Value: string;
     label: string;
     value : string;
+    Value_CH : string;
 }
