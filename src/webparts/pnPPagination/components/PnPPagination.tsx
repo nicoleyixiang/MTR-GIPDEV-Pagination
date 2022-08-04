@@ -63,7 +63,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // Checking for language 
     const url = window.location.href;
     if (url.search("/CH/") !== -1) {
-      this.setState({ isChinese : true });
+      this.setState({ isChinese : true, AADisplayText : "應用範疇", TADisplayText : "科技範疇"});
     }
 
     pnp.sp.web.select("ServerRelativeUrl").get().then((Response) => {
@@ -129,7 +129,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
                   <img className="card__image" src={item.RollupImage ? JSON.parse(item.RollupImage).serverRelativeUrl : "https://outhink.com/wp-content/themes/outhink-theme/images/ip.jpg"}></img>
                   <div className="card__content">
                     <strong>
-                      <a href={this.state.webUrl + "/SitePages/PublicationDetails.aspx" + "?itemid=" + item.ID} className="card__title">
+                      <a href={this.state.webUrl + (this.state.isChinese ? "/SitePages/CH/PublicationDetails.aspx" : "/SitePages/PublicationDetails.aspx") + "?itemid=" + item.ID} className="card__title">
                       {item.Title}
                       </a>
                     </strong>
@@ -189,8 +189,8 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     if (TAtagsList.length === 0) TAtagsList.push("");
 
     var filters = {
-      ApplicationArea_ENId: AAtagsList,
-      RelatedTechnology_ENId: TAtagsList
+      ApplicationArea_Id: AAtagsList,
+      RelatedTechnology_Id: TAtagsList
     };
 
     function multiFilter(array, filters) {

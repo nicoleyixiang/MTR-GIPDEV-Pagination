@@ -23,7 +23,7 @@ export class ClassTag{
         }
         else {
             this.value = item.Value;
-            this.label = item.Value_CH;
+            this.label = item.Value;
         }
     }
 }
