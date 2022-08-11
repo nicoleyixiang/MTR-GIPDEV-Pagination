@@ -19,7 +19,7 @@
 .card {
     width: 100%;
     aspect-ratio: 1 / 1;
-    border: none;
+    border-style: none !important;
     border-width: 0px;
     border-radius: 5px;
     border-color: white;
@@ -30,6 +30,8 @@
     aspect-ratio: 1.33 / 1;
     object-fit: cover;
     display: block;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 .card__image img {
@@ -41,7 +43,7 @@
 .card__content {
     padding: 15px;
     background: white;
-    height: 100px;
+    height: 110px;
     border-color: white;
 }
 
@@ -76,9 +78,9 @@
 }
 
 .AAcard__tag {
-    background-color: rgb(41,89,123);
+    background-color: rgb(71,143,206);
     border-radius: 5px;
-    font-size: 0.7em;
+    font-size: 0.8em;
     color: white;
     padding: 4px;
     margin-right: 5px;
@@ -86,10 +88,10 @@
 }
 
 .TAcard__tag {
-    font-size: 0.7em;
+    font-size: 0.8em;
     color: white;
     border-radius: 5px;
-    background-color: forestgreen;
+    background-color: rgb(61,131,59);
     padding: 4px;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
@@ -140,9 +142,6 @@
 
 .AA-single {
     width: 30%;
-    /* right: 0;
-    bottom: 0;
-    position: absolute; */
     padding-right: 2px;
 }
 

@@ -1,22 +1,16 @@
 import * as React from 'react';
 import { IPnPPaginationProps } from './IPnPPaginationProps';
 import { IPnPPaginationState } from './IPnPPaginationState';
-
 import { ClassItem } from '../models/ClassItem';
 import { ClassTag } from '../models/ClassTag';
-
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
-
 import { Pagination } from "@pnp/spfx-controls-react/lib/pagination";
 import pnp from 'sp-pnp-js';
-
 import Select from 'react-select';
 import 'react-select-plus/dist/react-select-plus.css';
-
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import { Grid } from '@react-ui-org/react-ui';
 
 /* Constants */
@@ -35,17 +29,17 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     this._scrollElement = document.querySelector('[data-automation-id="contentScrollRegion"]');
 
     this.state = {
-      listData: [],           // Stores the items of the most recent selection by the user  
+      filteredItems: [],           // Stores the items of the most recent selection by the user  
       allItems: [],           // Stores all items from the SP list 
       paginatedItems: [],     // Stores items to be displayed on the current page 
       AAtags: [],             // Stores all the ApplicationArea tags 
       TAtags: [],             // Stores all the TechnologyArea tags 
       AASelectedTags: [],     // Registers the ApplicationArea tags selected by the user 
       TASelectedTags: [],     // Registers the TechnologyArea tags selected by the user 
-      webUrl : "",
-      isChinese : false,
-      AADisplayText : "Application Area",
-      TADisplayText : "Related Technology",
+      webUrl: "",
+      isChinese: false,
+      AADisplayText: "Application Area",
+      TADisplayText: "Related Technology",
       pageNumber: 1,          // Stores the current page number the user is on 
       totalPages: 0           // Stores the total number of pages for pagination 
     };
@@ -63,11 +57,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     // Checking for language 
     const url = window.location.href;
     if (url.search("/CH/") !== -1) {
-      this.setState({ isChinese : true, AADisplayText : "應用範疇", TADisplayText : "科技範疇"});
+      this.setState({ isChinese: true, AADisplayText: "應用範疇", TADisplayText: "科技範疇" });
     }
 
     pnp.sp.web.select("ServerRelativeUrl").get().then((Response) => {
-      this.setState({ webUrl : Response.ServerRelativeUrl});
+      this.setState({ webUrl: Response.ServerRelativeUrl });
     })
 
     if (res) {
@@ -87,11 +81,11 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
   }
 
   // Logs changes in the tag selections
-  public AAlogChange(val) {
+  public onAATagSelectChange(val) {
     this.setState({ AASelectedTags: val ? val : [] }, () => this.getTaggedListItems());
   }
 
-  public TAlogChange(val) {
+  public onTATagSelectChange(val) {
     this.setState({ TASelectedTags: val ? val : [] }, () => this.getTaggedListItems());
   }
 
@@ -105,7 +99,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             isMulti={true}
             isClearable={true}
             placeholder={this.state.AADisplayText}
-            onChange={(val) => this.AAlogChange(val)}
+            onChange={(val) => this.onAATagSelectChange(val)}
             name="color"
             options={this.state.AAtags}
           />
@@ -115,33 +109,30 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
             isClearable={true}
             isMulti={true}
             placeholder={this.state.TADisplayText}
-            onChange={(val) => this.TAlogChange(val)}
+            onChange={(val) => this.onTATagSelectChange(val)}
             name="color"
             options={this.state.TAtags}
           />
         </div>
         <div className="grid__items">
-          {/* <Grid columns="repeat(auto-fit, minmax(440px, max-content))"
-            columnGap="2.5rem" rowGap="2rem" padding-left="3px"> */}
-            {
-              this.state.paginatedItems.map((item) =>
-                <div className="card">
-                  <img className="card__image" src={item.RollupImage ? JSON.parse(item.RollupImage).serverRelativeUrl : "https://outhink.com/wp-content/themes/outhink-theme/images/ip.jpg"}></img>
-                  <div className="card__content">
-                    <strong>
-                      <a href={this.state.webUrl + (this.state.isChinese ? "/SitePages/CH/PublicationDetails.aspx" : "/SitePages/PublicationDetails.aspx") + "?itemid=" + item.ID} className="card__title">
+          {
+            this.state.paginatedItems.map((item) =>
+              <div className="card">
+                <img className="card__image" src={item.RollupImage ? JSON.parse(item.RollupImage).serverRelativeUrl : "https://outhink.com/wp-content/themes/outhink-theme/images/ip.jpg"}></img>
+                <div className="card__content">
+                  <strong>
+                    <a href={this.state.webUrl + (this.state.isChinese ? "/SitePages/CH/PublicationDetails.aspx" : "/SitePages/EN/PublicationDetails.aspx") + "?itemid=" + item.ID} className="card__title">
                       {item.Title}
-                      </a>
-                    </strong>
-                    <div className="tag__container">
-                      <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_Id)}</div>
-                      <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_Id)}</div>
-                    </div>
+                    </a>
+                  </strong>
+                  <div className="tag__container">
+                    <div className="AAcard__tag">{this.getAATag(item.ApplicationArea_Id)}</div>
+                    <div className="TAcard__tag">{this.getTATag(item.RelatedTechnology_Id)}</div>
                   </div>
                 </div>
-              )
-            }
-          {/* </Grid> */}
+              </div>
+            )
+          }
         </div>
         <Pagination
           currentPage={this.state.pageNumber}
@@ -174,7 +165,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
         if (this.state.isChinese) {
           return this.state.TAtags[i].Value_CH
         }
-        return this.state.TAtags[i].Value;      
+        return this.state.TAtags[i].Value;
       }
     }
     return null;
@@ -188,22 +179,26 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
     if (AAtagsList.length === 0) AAtagsList.push("");
     if (TAtagsList.length === 0) TAtagsList.push("");
 
+    // Ensure key matches the field name stored in the item object
+    // Value is an array containing the wanted selections for corresponding key / field 
     var filters = {
       ApplicationArea_Id: AAtagsList,
       RelatedTechnology_Id: TAtagsList
     };
 
+    // Applies filters to the array passed through and returns items 
+    // that match one of the possible combinations 
     function multiFilter(array, filters) {
-      return array.filter(o =>
-        Object.keys(filters).every(k =>
-          [].concat(filters[k]).some(v => v === "" || (o[k] && o[k].toString() === v))));
+      return array.filter(o =>                                      // For each object in the array
+        Object.keys(filters).every(k =>                             // Check every filter key in the filters array 
+          [].concat(filters[k])                                     // Take the values stored in the current key 
+            .some(v => v === "" || (o[k] && o[k].toString() === (v)))));    // Check that one of the values matches the object's stored value 
     }
 
     let filtered = multiFilter(this.state.allItems, filters);
-    console.log(filtered);
 
     this.setState({
-      listData: filtered, paginatedItems: filtered.slice(0, pageSize),
+      filteredItems: filtered, paginatedItems: filtered.slice(0, pageSize),
       totalPages: Math.ceil(filtered.length / pageSize)
     }, () => this.renderImages());
 
@@ -245,8 +240,6 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   private setListItems(response) {
     let allListItems = response.map(item => new ClassItem(item, this.state.isChinese));
-    console.log(response);
-
     let displayOrderItems = allListItems.filter(item => item.DisplayOrder !== null);
     let rest = allListItems.filter(item => item.DisplayOrder === null);
 
@@ -276,7 +269,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
     // Store into current state
     this.setState({
-      pageNumber: 1, listData: allListItems, allItems: allListItems,
+      pageNumber: 1, filteredItems: allListItems, allItems: allListItems,
       paginatedItems: allListItems.slice(0, pageSize), totalPages: Math.ceil(allListItems.length / pageSize)
     },
       () => this.renderImages());
@@ -302,7 +295,7 @@ export default class PnPPagination extends React.Component<IPnPPaginationProps, 
 
   // Gets a subset of the items based on the page number selected by the user 
   public getPage(pageNum) {
-    this.setState({ paginatedItems: this.state.listData.slice((pageNum - 1) * pageSize, pageNum * pageSize), pageNumber: pageNum },
+    this.setState({ paginatedItems: this.state.filteredItems.slice((pageNum - 1) * pageSize, pageNum * pageSize), pageNumber: pageNum },
       () => this.renderImages());
     this.scrolltoSection();
   }

@@ -6,7 +6,7 @@ export interface IPnPPaginationState {
     allItems: ClassItem[];
     paginatedItems: ClassItem[]; 
     AAtags: ISPTag[];
-    listData: ClassItem[];
+    filteredItems: ClassItem[];
     TAtags: ISPTag[];
     AASelectedTags : ISPTag[];
     TASelectedTags : ISPTag[];
